@@ -75,6 +75,6 @@ class UserHelper:
             if resp.status == 200:
                 data = await resp.json()
 
-                return data['scores']
+                return data
             else:
                 return None

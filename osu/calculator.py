@@ -13,24 +13,7 @@ from utils import glob
 
 class Calculator:
     def __init__(self) -> None:
-        self.map_id: Optional[int] = 0
-
-        self.pp: Optional[float] = 0.0
-        self.stars: Optional[float] = 0.0
-        self.mods: Optional[int] = 0
-
-        self.map_creator: Optional[str] = ""
-        self.map_fullname: Optional[str] = ""
-
-    @property
-    def as_dict(self) -> dict[str]:
-        return {
-            'map_id': self.map_id,
-            'pp': self.pp,
-            'stars': self.stars,
-            'map_creator': self.map_creator,
-            'map_fullname': self.map_fullname
-        }
+        pass
 
     @classmethod
     async def getOsuFile(cls: 'Calculator', beatmap_id: int) -> Union[bool, pathlib.Path]:
@@ -43,10 +26,8 @@ class Calculator:
                 else:
                     return False
 
-            async with aiofiles.open(
-                    path, "wb"
-            ) as outfile:
-                await outfile.write(data)
+                path.write_bytes(data)
+                return path
         else:
             return path
 
@@ -79,16 +60,13 @@ class Calculator:
 
                 ezpp.calculate(beatmap_file)
 
-                ret = cls
-
-                ret.map_id = beatmap_id
-                ret.pp = ezpp.get_pp()
-                ret.mods = ezpp.get_mods()
-                ret.stars = ezpp.get_sr()
-                ret.map_fullname = f"{ezpp.get_artist()} - {ezpp.get_title()} [{ezpp.get_version()}]"
-                ret.map_creator = ezpp.get_creator()
-
-                return ret
+                return {
+                    'map_id': beatmap_id,
+                    'pp': ezpp.get_pp(),
+                    'stars': ezpp.get_sr(),
+                    'map_creator': str(ezpp.get_creator(), 'utf-8'),
+                    'map_fullname': f"{str(ezpp.get_artist(), 'utf-8')} - {str(ezpp.get_title(), 'utf-8')} [{str(ezpp.get_version(), 'utf-8')}]"
+                }
         elif mode == 2:
             return cls
         else:

@@ -3,6 +3,7 @@
 from os import listdir
 
 import aiohttp
+from discord import Embed
 from discord.ext import commands
 from cmyui import log
 from cmyui.logging import Ansi
@@ -45,5 +46,11 @@ async def on_message(message):
         return
 
     await client.process_commands(message)
+
+@client.event
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandNotFound):
+        em = Embed(title=f"Error!!!", description=f"Command not found.", color=ctx.author.color)
+        await ctx.send(embed=em)
 
 client.run(config.TOKEN)
