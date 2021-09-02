@@ -1,11 +1,13 @@
 import traceback
 from datetime import datetime
 from functools import wraps
+from random import choice
 from sys import exc_info
 
 from cmyui import Ansi, log
 from discord import Embed
 
+from utils import config
 from utils.user import UserHelper
 
 
@@ -14,13 +16,26 @@ def handle_exception(func) -> wraps:
 
     @wraps(func)
     async def wrapper(*args, **kwargs):
+        ctx = args[1]
+
         try:
             return await func(*args, **kwargs)
         except:
             err = exc_info()
             tb = ''.join(traceback.format_tb(err[2]))
             log(f"Unknown error occurred: {err[1]}\n{tb}", Ansi.RED)
-            return await args[1].send(f"Error occurred while executing this command: `{err[1]}`\n```sh\n{tb}\n```")
+
+            em = Embed(title="Critical error was occurred!",
+                       description="Please, report it! [Discord](https://discord.gg/N7NVbrJDcx) " +
+                                   "[GitHub](https://github.com/osu-Sakuru/sakuro/issues)\n\n" +
+                                   f"Error: `{err[1]}`\n```sh\n{tb}\n```",
+                       color=ctx.author.color,
+                       timestamp=datetime.now())
+
+            em.set_thumbnail(url=choice(config.ERROR_GIFS))
+            em.set_footer(text=choice(config.WORDS))
+
+            return await ctx.send(embed=em)
 
     return wrapper
 
@@ -50,14 +65,14 @@ def check_args(func) -> wraps:
     return wrapper
 
 def link_required(func) -> wraps:
-    """Simple wrapper for command that's requires user be linked."""
+    """Simple wrapper for command that's requires user be linked. NOTE: Use it ONLY with commands."""
 
     @wraps(func)
     async def wrapper(*args, **kwargs):
-        user = args[2]
+        name = args[2]
         ctx = args[1]
 
-        if user is None:
+        if name is None:
             if not (data := await UserHelper.getDiscordUser(ctx.message.author.id)):
                 embed = Embed(title="Notice!",
                               description="Your account should be linked with our bot to use this command. " +
@@ -67,12 +82,12 @@ def link_required(func) -> wraps:
 
                 return await ctx.send(embed=embed)
             else:
-                upd_args = list(args)
-                upd_args[2] = data['osu_name']
-                args = tuple(upd_args)
+                args = args[:2] + (data,) + args[3:]
         else:
-            if not await UserHelper.getOsuUserByName(user, "info"):
-                return await ctx.send(f"User `{user}` not found or didn't exists.")
+            if not (data := await UserHelper.getOsuUserByName(name, "info")):
+                return await ctx.send(f"User `{name}` not found or didn't exists.")
+            else:
+                args = args[:2] + (data,) + args[3:]
 
         return await func(*args, **kwargs)
 

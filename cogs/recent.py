@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 from datetime import datetime
+from typing import Union
 
 from cmyui import log, Ansi
 from cmyui.osu import Mods
 from discord import Embed
 from discord.ext import commands
+from discord.ext.commands import Context
 
 from osu.calculator import Calculator
 from utils.misc import convert_mode_int, convert_grade_emoji, get_completion
@@ -18,12 +20,10 @@ class RecentCog(commands.Cog):
 
     @commands.command(aliases=['rs'])
     @handle_exception
-    @link_required
     @check_args
-    async def recent(self, ctx, name: str = None, mods: str = 'vn', mode: str = 'std'):
-        req = await UserHelper.getUserScores(name, convert_mode_int(mode), mods, 1, 'recent')
-        score = req['scores'][0]
-        player = req['player']
+    @link_required
+    async def recent(self, ctx: Context, player: Union[dict, str] = None, mods: str = 'vn', mode: str = 'std'):
+        score = (await UserHelper.getUserScores(player['name'], convert_mode_int(mode), mods, 1, 'recent'))[0]
         calc = await Calculator.calculate(score['beatmap']['id'], convert_mode_int(mode), score['mods'], score['acc'], None)
 
         embed = Embed(description=f"""▸ {convert_grade_emoji(score['grade'])} ▸ **{score['pp']:.2f}PP**{f' *({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' if score['grade'] not in ('S', 'SS', 'X', 'SH') else ''} """ +
