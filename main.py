@@ -7,7 +7,7 @@ from discord import Embed
 from discord.ext import commands
 from cmyui import log
 from cmyui.logging import Ansi
-from orjson
+import orjson
 from tinydb import TinyDB
 
 import utils.glob as glob
