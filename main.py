@@ -2,10 +2,11 @@
 # -*- coding: utf-8 -*-
 import asyncio
 import datetime
+import os
 from os import listdir
 
 import aiohttp
-from discord import Embed, Message
+from discord import Embed, Message, Intents
 from discord.ext import commands
 from cmyui import log
 from cmyui.logging import Ansi
@@ -21,7 +22,10 @@ import utils.config as config
 
 log('Starting bot...', Ansi.BLUE)
 
-client = commands.Bot(command_prefix=config.PREFIX)
+intents = Intents.default()
+intents.members = True
+
+client = commands.Bot(command_prefix=config.PREFIX, intents=intents)
 
 @client.event
 async def on_ready() -> None:
@@ -40,10 +44,12 @@ async def on_ready() -> None:
 
     # ## COGS INIT ## #
     log('Initiating Cogs...', Ansi.LMAGENTA)
-    for file in listdir("./cogs"):
-        if file.endswith('.py'):
-            client.load_extension(f"cogs.{file[:-3]}")
+    for cog_dir in os.listdir('./cogs'):
+        for file in os.listdir(f"./cogs/{cog_dir}"):
+            if file.endswith('py'):
+                client.load_extension(f"cogs.{cog_dir}.{file[:-3]}")
     log('Initiated Cogs!', Ansi.LGREEN)
+
     # ## COGS INIT END ## #
     log('Initiating background loops...', Ansi.LMAGENTA)
     funcs = getmembers(bg_loops, lambda x: isfunction(x) and x.__name__ in bg_loops.__all__)
