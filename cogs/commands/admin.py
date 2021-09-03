@@ -10,6 +10,7 @@ class AdminCog(commands.Cog, name='Admin'):
 
     def __init__(self, bot: Bot):
         self.bot = bot
+        self.hide = True
 
     @commands.command(name='reload', hidden=True)
     @commands.is_owner()
