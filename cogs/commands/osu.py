@@ -29,23 +29,17 @@ class OsuCog(commands.Cog, name='Osu'):
         usage=f"{config.PREFIX}osu [username] [vn/rx/ap] [std/taiko/mania]"
     )
     @handle_exception
-    @check_args
     @link_required
+    @check_args
     async def osu(self, ctx: Context, player: Union[dict, str] = None, mods: str = 'vn', mode: str = 'std'):
         scope = await UserHelper.getOsuUserByName(player['name'], scope="all")
+        stats = scope['stats'][f'{mods}_{mode}']
 
-        # TODO: Need to fix api response;
-        # embed = Embed(description=f"**▸ Official Rank:** #{player['stats'][f'rank_{mods}_{mode}']} " +
-        #                           f"({player['info']['country'].upper()}#{player['stats'][f'crank_{mods}_{mode}']})\n**▸ " +
-        #                           f"Level:** `not implemented`\n**▸ Total PP:** {player['stats'][f'pp_{mods}_{mode}']}\n**▸ " +
-        #                           f"Hit Accuracy:** {player['stats'][f'acc_{mods}_{mode}']}%\n**▸ " +
-        #                           f"Playcount:** {player['stats'][f'plays_{mods}_{mode}']}", timestamp=datetime.now(), colour=0x00ff00)
-
-        embed = Embed(description=f"**▸ Official Rank:** #{scope['stats'][f'rank_{mods}_{mode}']} " +
-                                  f"({scope['info']['country'].upper()}#{scope['stats'][f'crank_{mods}_{mode}']})\n**▸ " +
-                                  f"Level:** `not implemented`\n**▸ Total PP:** {scope['stats']['pp']}\n**▸ " +
-                                  f"Hit Accuracy:** {scope['stats']['acc']:.2f}%\n**▸ " +
-                                  f"Playcount:** {scope['stats']['plays']}", timestamp=datetime.now(), colour=0x00ff00)
+        embed = Embed(description=f"**▸ Official Rank:** #{stats['rank']} " +
+                                  f"({scope['info']['country'].upper()}#{stats['crank']})\n**▸ " +
+                                  f"Level:** `not implemented`\n**▸ Total PP:** {stats['pp']}\n**▸ " +
+                                  f"Hit Accuracy:** {stats['acc']:.2f}%\n**▸ " +
+                                  f"Playcount:** {stats['plays']}", timestamp=datetime.now(), colour=0x00ff00)
 
         embed.set_author(name=f"{mode.upper()}!{mods.upper()} Profile for {player['name']}",
                          icon_url=f"https://sakuru.pw/static/flags/{scope['info']['country'].upper()}.png",
@@ -64,8 +58,8 @@ class OsuCog(commands.Cog, name='Osu'):
         usage=f"`{config.PREFIX}recent [username] [vn/rx/ap] [std/taiko/mania]`"
     )
     @handle_exception
-    @check_args
     @link_required
+    @check_args
     async def recent(self, ctx: Context, player: Union[dict, str] = None, mods: str = 'vn', mode: str = 'std'):
         score = (await UserHelper.getUserScores(player['name'], convert_mode_int(mode), mods, 1, 'recent'))[0]
         calc = await Calculator.calculate(score['beatmap']['id'], convert_mode_int(mode), score['mods'], score['acc'], None)

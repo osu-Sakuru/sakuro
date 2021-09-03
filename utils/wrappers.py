@@ -48,6 +48,11 @@ def check_args(func) -> wraps:
         # Getting required arguments, skip username
         ctx, _, mods, mode = args[1:5]
 
+        if mods.startswith('-'):
+            mods = mods.replace('-', '')
+            mode = mode.replace('-', '')
+            args = args[:3] + (mods, mode) + args[5:]
+
         if mods not in ('vn', 'rx', 'ap'):
             return await ctx.send('Invalid mods provided! (vn, rx, ap)')
 
@@ -74,7 +79,7 @@ def link_required(func) -> wraps:
         name = args[2]
         ctx = args[1]
 
-        if name is None:
+        if name is None or name.startswith('-'):
             if not (data := await UserHelper.getDiscordUser(ctx.message.author.id)):
                 embed = Embed(title="Notice!",
                               description="Your account should be linked with our bot to use this command. " +
@@ -84,7 +89,10 @@ def link_required(func) -> wraps:
 
                 return await ctx.send(embed=embed)
             else:
-                args = args[:2] + (data,) + args[3:]
+                if name is not None and name.startswith('-'):
+                    args = args[:2] + (data, name) + args[4:]
+                else:
+                    args = args[:2] + (data,) + args[3:]
         else:
             if not (data := await UserHelper.getOsuUserByName(name, "info")):
                 return await ctx.send(f"User `{name}` not found or didn't exists.")
