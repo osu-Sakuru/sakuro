@@ -10,3 +10,4 @@ if __import__('typing').TYPE_CHECKING:
 db: 'TinyDB'
 http: 'Optional[ClientSession]'
 client: 'Bot'
+start_time: int

@@ -22,7 +22,12 @@ class OsuCog(commands.Cog, name='Osu'):
     def __init__(self, bot: Bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.command(
+        brief="Shows your/users stats on Sakuru.",
+        help="Shows your/users stats on Sakuru, you also can use positional arguments for different modes i.e\n" +
+             f"{config.PREFIX}osu alowave -rx -mania",
+        usage=f"{config.PREFIX}osu [username] [vn/rx/ap] [std/taiko/mania]"
+    )
     @handle_exception
     @check_args
     @link_required

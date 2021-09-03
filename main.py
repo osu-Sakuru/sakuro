@@ -3,6 +3,7 @@
 import asyncio
 import datetime
 import os
+import time
 from os import listdir
 
 import aiohttp
@@ -30,6 +31,7 @@ client = commands.Bot(command_prefix=config.PREFIX, intents=intents, help_comman
 @client.event
 async def on_ready() -> None:
     glob.client = client
+    glob.start_time = int(time.time())
 
     # ## DATABASE CONNECT ## #
     log('Settinng up database...', Ansi.MAGENTA)
