@@ -25,7 +25,7 @@ log('Starting bot...', Ansi.BLUE)
 intents = Intents.default()
 intents.members = True
 
-client = commands.Bot(command_prefix=config.PREFIX, intents=intents)
+client = commands.Bot(command_prefix=config.PREFIX, intents=intents, help_command=None)
 
 @client.event
 async def on_ready() -> None:

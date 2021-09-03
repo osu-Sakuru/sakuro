@@ -39,6 +39,7 @@ def handle_exception(func) -> wraps:
 
     return wrapper
 
+
 def check_args(func) -> wraps:
     """Simple argument checker for commands."""
 
@@ -64,6 +65,7 @@ def check_args(func) -> wraps:
 
     return wrapper
 
+
 def link_required(func) -> wraps:
     """Simple wrapper for command that's requires user be linked. NOTE: Use it ONLY with commands."""
 
@@ -76,7 +78,7 @@ def link_required(func) -> wraps:
             if not (data := await UserHelper.getDiscordUser(ctx.message.author.id)):
                 embed = Embed(title="Notice!",
                               description="Your account should be linked with our bot to use this command. " +
-                              "Please, follow [this link](https://sakuru.pw/settings/socials) to link your account.",
+                                          "Please, follow [this link](https://sakuru.pw/settings/socials) to link your account.",
                               timestamp=datetime.now(), colour=0xeaff00)
                 embed.set_footer(text='Sakuru.pw private osu! server.')
 

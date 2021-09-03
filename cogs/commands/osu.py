@@ -10,6 +10,7 @@ from discord.ext import commands
 from discord.ext.commands import Bot, Context
 
 from osu.calculator import Calculator
+from utils import config
 from utils.misc import convert_mode_int, convert_grade_emoji, get_completion
 from utils.user import UserHelper
 from utils.wrappers import handle_exception, check_args, link_required
@@ -50,7 +51,13 @@ class OsuCog(commands.Cog, name='Osu'):
 
         await ctx.send(embed=embed)
 
-    @commands.command(aliases=['rs'])
+    @commands.command(
+        aliases=['rs'],
+        brief="Shows your recent score.",
+        help="Shows your recent posted score on Sakuru, also you can pass argument for " +
+             f"relax or other modes by `{config.PREFIX}recent -rx`",
+        usage=f"`{config.PREFIX}recent [username] [vn/rx/ap] [std/taiko/mania]`"
+    )
     @handle_exception
     @check_args
     @link_required
