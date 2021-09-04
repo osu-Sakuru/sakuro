@@ -11,3 +11,4 @@ db: 'TinyDB'
 http: 'Optional[ClientSession]'
 client: 'Bot'
 start_time: int
+donors: dict[str, any]

@@ -36,8 +36,7 @@ class MiscCog(commands.Cog, name='Misc'):
         usage="<that> (those) [this]"
     )
     async def test(self, ctx: Context):
-        print(self.bot.get_command('test').usage)
-        await ctx.send("**Test**")
+        pass
 
     @commands.command(
         brief="Info about Sakuru.pw",
