@@ -62,7 +62,7 @@ def check_args(func) -> wraps:
         if mode == 'mania':
             if mods != 'vn':
                 return await ctx.send('Invalid mods for mania! Only vn is allowed.')
-        else:
+        elif mode == 'taiko':
             if mods not in ('vn', 'rx'):
                 return await ctx.send('Invalid mods for taiko! Only vn and rx is allowed.')
 
