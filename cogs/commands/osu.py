@@ -40,18 +40,14 @@ class OsuCog(commands.Cog, name='Osu'):
         level_percent = get_level_percent(stats['tscore'], level)
 
         # Donors ♥️
-        isDonor = True if \
-            discord.utils.find(
-                lambda x: x['osu_id'] == scope['info']['id'],
-                glob.donors
-            ) is not None else False
+        isDonor = scope['info']['priv'] & 48
 
         embed = Embed(description=f"**▸ Official Rank:** #{stats['rank']} " +
                                   f"({scope['info']['country'].upper()}#{stats['crank']})\n**▸ " +
                                   f"Level:** {level} ({level_percent:.2f}%)\n**▸ Total PP:** {stats['pp']}\n**▸ " +
                                   f"Hit Accuracy:** {stats['acc']:.2f}%\n**▸ " +
                                   f"Playcount:** {stats['plays']}" +
-                                  f"""{f'{chr(10) * 2}**▸ {player["name"]} is Supporter:** ♥️' if isDonor else ''}""",
+                                  f"""{f'{chr(10) * 2}**▸ {player["name"]} is a Supporter:** ♥️' if isDonor else ''}""",
                       timestamp=datetime.now(), colour=0x00ff00)
 
         embed.set_author(name=f"{mode.upper()}!{mods.upper()} Profile for {player['name']}",

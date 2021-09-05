@@ -31,7 +31,6 @@ async def check_donors():
             'secret': config.API_SECRET
         }) as resp:
             data = await resp.json()
-            glob.donors = data
             guild = glob.client.get_guild(809926238851825716)
 
             role = discord.utils.find(
