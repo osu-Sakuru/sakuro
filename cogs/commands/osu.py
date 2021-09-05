@@ -138,14 +138,6 @@ class OsuCog(commands.Cog, name='Osu'):
         embeds = []
         description = ""
 
-        embed = Embed(color=ctx.author.color)
-
-        embed.set_author(name=f"Top {len(scores)} {mode.upper()}!{mods.upper()} Plays for {player['name']}",
-                         url=f"https://sakuru.pw/u/{player['id']}",
-                         icon_url=f"https://sakuru.pw/static/flags/{player['country'].upper()}.png")
-        embed.set_footer(text="On Sakuru.pw server.",
-                         icon_url="https://sakuru.pw/static/ingame.png")
-
         for idx, score in enumerate(scores):
             calc = await Calculator.calculate(
                 score['beatmap']['id'],
@@ -165,14 +157,26 @@ class OsuCog(commands.Cog, name='Osu'):
 
             if len(scores) < 5:
                 if idx % len(scores) == len(scores) - 1:
-                    embed.description = description
+                    embed = Embed(color=ctx.author.color, description=description)
 
-                    description = ""
-                    embeds.append(embed)
+                    embed.set_author(name=f"Top {len(scores)} {mode.upper()}!{mods.upper()} Plays for {player['name']}",
+                                     url=f"https://sakuru.pw/u/{player['id']}",
+                                     icon_url=f"https://sakuru.pw/static/flags/{player['country'].upper()}.png")
+                    embed.set_footer(text="On Sakuru.pw server.",
+                                     icon_url="https://sakuru.pw/static/ingame.png")
+
+                    await ctx.send(embed=embed)
+                    return
             elif idx % 5 == 4:
-                embed.description = description
-
+                embed = Embed(color=ctx.author.color, description=description)
                 description = ""
+
+                embed.set_author(name=f"Top {len(scores)} {mode.upper()}!{mods.upper()} Plays for {player['name']}",
+                                 url=f"https://sakuru.pw/u/{player['id']}",
+                                 icon_url=f"https://sakuru.pw/static/flags/{player['country'].upper()}.png")
+                embed.set_footer(text="On Sakuru.pw server.",
+                                 icon_url="https://sakuru.pw/static/ingame.png")
+
                 embeds.append(embed)
 
         await paginator.run(embeds)
