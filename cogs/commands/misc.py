@@ -20,7 +20,7 @@ BASE_HELP = (
         "[Discord](https://discord.gg/N7NVbrJDcx) [GitHub](https://github.com/osu-Sakuru/sakuro/issues)\n" +
         "- Explanation of command usage: Arguments are separated by spaces, if argument is in `[]` it means that argument " +
         "is optional; `<>` means that argument is required; `/` means *one of them*.\n"
-        f"- Commands that requires multiple arguments, using `-` prefix i.e.\n`{config.PREFIX}rs alowave -std -rx`\n" +
+        f"- Commands that requires multiple arguments, using `-` prefix i.e.\n`{config.PREFIX}rs alowave -rx -std `\n" +
         f"`{config.PREFIX}map -dthdhr -98.5 -2`\n\n__**All commands:**__\n\n"
 )
 
