@@ -166,6 +166,7 @@ class OsuCog(commands.Cog, name='Osu'):
                                      icon_url=f"https://sakuru.pw/static/flags/{player['country'].upper()}.png")
                     embed.set_footer(text="On Sakuru.pw server.",
                                      icon_url="https://sakuru.pw/static/ingame.png")
+                    embed.set_thumbnail(url=f"https://a.sakuru.pw/{player['id']}")
 
                     await ctx.send(embed=embed)
                     return
@@ -178,6 +179,7 @@ class OsuCog(commands.Cog, name='Osu'):
                                  icon_url=f"https://sakuru.pw/static/flags/{player['country'].upper()}.png")
                 embed.set_footer(text="On Sakuru.pw server.",
                                  icon_url="https://sakuru.pw/static/ingame.png")
+                embed.set_thumbnail(url=f"https://a.sakuru.pw/{player['id']}")
 
                 embeds.append(embed)
 
@@ -249,6 +251,7 @@ class OsuCog(commands.Cog, name='Osu'):
                          icon_url=f"https://sakuru.pw/static/flags/{player['country'].upper()}.png")
         embed.set_footer(text="On Sakuru.pw server.",
                          icon_url="https://sakuru.pw/static/ingame.png")
+        embed.set_thumbnail(url=f"https://a.sakuru.pw/{player['id']}")
 
         await ctx.send(embed=embed)
 
