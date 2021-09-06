@@ -70,6 +70,18 @@ def check_args(func) -> wraps:
 
     return wrapper
 
+def only_sakuru(func) -> wraps:
+
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        ctx = args[1]
+
+        if ctx.guild.id != 809926238851825716:
+            return await ctx.send("no")
+
+        return await func(*args, **kwargs)
+
+    return wrapper
 
 def link_required(func) -> wraps:
     """Simple wrapper for command that's requires user be linked. NOTE: Use it ONLY with commands."""

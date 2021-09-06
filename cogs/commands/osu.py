@@ -75,6 +75,8 @@ class OsuCog(commands.Cog, name='Osu'):
     async def recent(self, ctx: Context, player: Union[dict, str] = None, mods: str = 'vn',
                      mode: str = 'std') -> None:
         score = (await UserHelper.getUserScores(player['safe_name'], convert_mode_int(mode), mods, 1, 'recent'))[0]
+        glob.latest_map[ctx.channel.id] = score['beatmap']['id']
+
         calc = await Calculator.calculate(
             score['beatmap']['id'],
             convert_mode_int(mode),
@@ -102,7 +104,7 @@ class OsuCog(commands.Cog, name='Osu'):
         await ctx.send(embed=embed)
 
     @commands.command(
-        aliases=['top'],
+        aliases=['top', 'best'],
         brief="Shows your best scores.",
         help="Shows your best scores on Sakuru, also you can pass argument for " +
              f"relax or other modes by `{config.PREFIX}topscores -rx`",
@@ -181,6 +183,74 @@ class OsuCog(commands.Cog, name='Osu'):
 
         await paginator.run(embeds)
 
+    @commands.command(
+        aliases=['cur', 'c'],
+        brief="Shows your best scores on current beatmap.",
+        help="Shows your best scores on current beatmap, also you can pass argument for " +
+             f"relax or other modes by `{config.PREFIX}current -rx`",
+        usage=f"`{config.PREFIX}current [username] [vn/rx/ap] [std/taiko/mania]`"
+    )
+    @handle_exception
+    @link_required
+    @check_args
+    async def current(self, ctx: Context, player: Union[dict, str] = None, mods: str = 'vn',
+                        mode: str = 'std') -> None:
+        if not glob.latest_map.get(ctx.channel.id):
+            embed = Embed(color=ctx.author.color,
+                          description=f"No latest beatmap in this channel.",
+                          timestamp=datetime.now())
+
+            embed.set_author(name="Error!")
+            embed.set_footer(text=choice(config.WORDS))
+            embed.set_thumbnail(url=choice(config.ERROR_GIFS))
+
+            await ctx.send(embed=embed)
+            return
+
+        scores = await UserHelper.getUserScores(player['id'], convert_mode_int(mode), mods, 5, 'best',
+                                                glob.latest_map.get(ctx.channel.id))
+
+        if len(scores) == 0:
+            embed = Embed(color=ctx.author.color,
+                          description=f"`{player['name']}` have no scores on this beatmap.",
+                          timestamp=datetime.now())
+
+            embed.set_author(name="Error!")
+            embed.set_footer(text=choice(config.WORDS))
+            embed.set_thumbnail(url=choice(config.ERROR_GIFS))
+
+            await ctx.send(embed=embed)
+            return
+
+        map_fullname = ""
+        description = ""
+
+        for idx, score in enumerate(scores):
+            calc = await Calculator.calculate(
+                score['beatmap']['id'],
+                convert_mode_int(mode),
+                score['mods'],
+                score['acc'],
+                None
+            )
+            map_fullname = calc['map_fullname']
+
+            description += f"""** {idx + 1}. {f' +{Mods(score["mods"])!r}' if score['mods'] != 0 else ''}** [{calc['stars']:.2f}★]\n""" \
+                           f"▸ {convert_grade_emoji(score['grade'])} ▸ **{score['pp']:.2f}PP**" \
+                           f"""{f' *({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' if score['grade'] not in ('S', 'SS', 'X', 'SH') else ''} """ \
+                           f"▸ {score['acc']:.2f}%\n▸ {score['score']} ▸ x{score['max_combo']}/{score['beatmap']['max_combo']} " \
+                           f"▸ [{score['n300']}/{score['n100']}/{score['n50']}/{score['nmiss']}]\n" \
+                           f"▸ Score Set <t:{datetime.fromisoformat(score['play_time']).timestamp().__int__()}:R>\n"
+
+        embed = Embed(color=ctx.author.color, description=description)
+
+        embed.set_author(name=f"Top {len(scores)} Plays for {player['name']} on {map_fullname}",
+                         url=f"https://sakuru.pw/u/{player['id']}",
+                         icon_url=f"https://sakuru.pw/static/flags/{player['country'].upper()}.png")
+        embed.set_footer(text="On Sakuru.pw server.",
+                         icon_url="https://sakuru.pw/static/ingame.png")
+
+        await ctx.send(embed=embed)
 
 def setup(bot):
     log(f"Initiated {__name__} cog!", Ansi.CYAN)

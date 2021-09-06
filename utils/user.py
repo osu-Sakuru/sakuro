@@ -53,14 +53,15 @@ class UserHelper:
                 return None
 
     @classmethod
-    async def getUserScores(cls, user: Union[int, str], mode: int, table: str, limit: int, scope: str = None, bm: str = None):
+    async def getUserScores(cls, user: Union[int, str], mode: int, table: str, limit: int, scope: str = None,
+                            bm: Union[int, str] = None):
         params = {
             'mode': mode,
             'table': table,
             'limit': limit
         }
 
-        if user.isdecimal():
+        if type(user) == int:
             params.update({'id': user})
         else:
             params.update({'name': user})
