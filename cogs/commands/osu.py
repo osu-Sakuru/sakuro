@@ -9,31 +9,30 @@ from cmyui import log, Ansi
 from cmyui.osu import Mods
 from discord import Embed
 from discord.ext import commands
-from discord.ext.commands import Bot, Context
 
+from objects.sakuro import Sakuro, ContextWrap
 from osu.calculator import Calculator
-from utils import config, glob
-from utils.misc import convert_mode_int, convert_grade_emoji, get_completion, get_level, get_level_percent
-from utils.user import UserHelper
-from utils.wrappers import handle_exception, check_args, link_required
+from objects import config
+from utils.misc import convert_mode_int, convert_grade_emoji, get_completion, get_level, get_level_percent, sakuro_error
+from objects.user import UserHelper
+from utils.wrappers import check_args, link_required, sakuroCommand
 
 
 class OsuCog(commands.Cog, name='Osu'):
     """Main bot commands."""
 
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: Sakuro):
         self.bot = bot
 
-    @commands.command(
+    @sakuroCommand(
         brief="Shows your/users stats on Sakuru.",
         help="Shows your/users stats on Sakuru, you also can use positional arguments for different modes i.e\n" +
              f"{config.PREFIX}osu alowave -rx -mania",
         usage=f"{config.PREFIX}osu [username] [vn/rx/ap] [std/taiko/mania]"
     )
-    @handle_exception
     @link_required
     @check_args
-    async def osu(self, ctx: Context, player: Union[dict, str] = None, mods: str = 'vn',
+    async def osu(self, ctx: ContextWrap, player: Union[dict, str] = None, mods: str = 'vn',
                   mode: str = 'std'):
         scope = await UserHelper.getOsuUserByName(player['safe_name'], scope="all")
         stats = scope['stats'][f'{mods}_{mode}']
@@ -50,7 +49,7 @@ class OsuCog(commands.Cog, name='Osu'):
                                   f"Level:** {level} ({level_percent:.2f}%)\n**▸ Total PP:** {stats['pp']}\n**▸ " +
                                   f"Hit Accuracy:** {stats['acc']:.2f}%\n**▸ " +
                                   f"Playcount:** {stats['plays']}" +
-                                  f"""{f'{chr(10) * 2}**▸ {player["name"]} is a Supporter:** ♥️' if isDonor else ''}""",
+                                  f'\n\n**▸ {player["name"]} is a Supporter:** ♥️' if isDonor else '',
                       timestamp=datetime.now(), colour=0x00ff00)
 
         embed.set_author(name=f"{mode.upper()}!{mods.upper()} Profile for {player['name']}",
@@ -62,20 +61,19 @@ class OsuCog(commands.Cog, name='Osu'):
 
         await ctx.send(embed=embed)
 
-    @commands.command(
+    @sakuroCommand(
         aliases=['rs'],
         brief="Shows your recent score.",
         help="Shows your recent posted score on Sakuru, also you can pass argument for " +
              f"relax or other modes by `{config.PREFIX}recent -rx`",
         usage=f"`{config.PREFIX}recent [username] [vn/rx/ap] [std/taiko/mania]`"
     )
-    @handle_exception
     @link_required
     @check_args
-    async def recent(self, ctx: Context, player: Union[dict, str] = None, mods: str = 'vn',
+    async def recent(self, ctx: ContextWrap, player: Union[dict, str] = None, mods: str = 'vn',
                      mode: str = 'std') -> None:
         score = (await UserHelper.getUserScores(player['safe_name'], convert_mode_int(mode), mods, 1, 'recent'))[0]
-        glob.latest_map[ctx.channel.id] = score['beatmap']['id']
+        self.bot.cache['latest_maps'][ctx.channel.id] = score['beatmap']['id']
 
         calc = await Calculator.calculate(
             score['beatmap']['id'],
@@ -86,15 +84,15 @@ class OsuCog(commands.Cog, name='Osu'):
         )
 
         embed = Embed(description=f"▸ {convert_grade_emoji(score['grade'])} ▸ **{score['pp']:.2f}PP**" +
-                                  f"""{f' *({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' if score['grade'] not in ('S', 'SS', 'X', 'SH') else ''} """ +
+                                  f' *({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' if score['grade'] not in ('S', 'SS', 'X', 'SH') else '' +
                                   f"▸ {score['acc']:.2f}%\n▸ {score['score']} ▸ x{score['max_combo']}/{score['beatmap']['max_combo']} " +
                                   f"▸ [{score['n300']}/{score['n100']}/{score['n50']}/{score['nmiss']}]" +
-                                  f"""{f"{chr(10)}▸ Map Completion: {get_completion(score['time_elapsed'], score['beatmap']['total_length'])}%" if score['grade'] == 'F' else ''}""" +
+                                  f"\n▸ Map Completion: {get_completion(score['time_elapsed'], score['beatmap']['total_length'])}%" if score['grade'] == 'F' else '' +
                                   f"\n▸ Score Set <t:{datetime.fromisoformat(score['play_time']).timestamp().__int__()}:R>",
                       timestamp=datetime.fromisoformat(score['play_time']), colour=ctx.author.color)
 
         embed.set_author(
-            name=f"""{calc['map_fullname']}{f' +{Mods(score["mods"])!r}' if score['mods'] != 0 else ''} [{calc['stars']:.2f}★]""",
+            name=calc['map_fullname'] + f' +{Mods(score["mods"])!r}' if score['mods'] != 0 else '' + f"[{calc['stars']:.2f}★]",
             url=f"https://chimu.moe/d/{score['beatmap']['set_id']}",
             icon_url=f"https://a.sakuru.pw/{player['id']}")
 
@@ -103,30 +101,25 @@ class OsuCog(commands.Cog, name='Osu'):
 
         await ctx.send(embed=embed)
 
-    @commands.command(
+    @sakuroCommand(
         aliases=['top', 'best'],
         brief="Shows your best scores.",
         help="Shows your best scores on Sakuru, also you can pass argument for " +
              f"relax or other modes by `{config.PREFIX}topscores -rx`",
         usage=f"`{config.PREFIX}topscores [username] [vn/rx/ap] [std/taiko/mania]`"
     )
-    @handle_exception
     @link_required
     @check_args
-    async def topscores(self, ctx: Context, player: Union[dict, str] = None, mods: str = 'vn',
+    async def topscores(self, ctx: ContextWrap, player: Union[dict, str] = None, mods: str = 'vn',
                         mode: str = 'std') -> None:
         scores = await UserHelper.getUserScores(player['safe_name'], convert_mode_int(mode), mods, 100, 'best')
 
         if len(scores) == 0:
-            embed = Embed(color=ctx.author.color,
-                          description=f"This user have no scores on {mods.upper()}!{mode.upper()}",
-                          timestamp=datetime.now())
-
-            embed.set_author(name="Oopsie! I didn't knew >_<")
-            embed.set_footer(text=choice(config.WORDS))
-            embed.set_thumbnail(url=choice(config.ERROR_GIFS))
-
-            await ctx.send(embed=embed)
+            await ctx.send(embed=sakuro_error(
+                title="Something went wrong!",
+                error=f"`{player['name']}` have no scores on `{mods.upper()}!{mode.upper()}`",
+                color=ctx.author.color
+            ))
             return
 
         paginator = DiscordUtils.Pagination.CustomEmbedPaginator(ctx, remove_reactions=True, timeout=120)
@@ -150,9 +143,9 @@ class OsuCog(commands.Cog, name='Osu'):
             )
 
             description += f"""** {idx + 1}. [{calc['map_fullname']}](https://skuru.pw/direct?id={score['beatmap']['id']})""" \
-                           f"""{f' +{Mods(score["mods"])!r}' if score['mods'] != 0 else ''}** [{calc['stars']:.2f}★]\n""" \
+                           f' +{Mods(score["mods"])!r}' if score['mods'] != 0 else '' + f"** [{calc['stars']:.2f}★]\n" \
                            f"▸ {convert_grade_emoji(score['grade'])} ▸ **{score['pp']:.2f}PP**" \
-                           f"""{f' *({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' if score['grade'] not in ('S', 'SS', 'X', 'SH') else ''} """ \
+                           f' *({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' if score['grade'] not in ('S', 'SS', 'X', 'SH') else '' \
                            f"▸ {score['acc']:.2f}%\n▸ {score['score']} ▸ x{score['max_combo']}/{score['beatmap']['max_combo']} " \
                            f"▸ [{score['n300']}/{score['n100']}/{score['n50']}/{score['nmiss']}]\n" \
                            f"▸ Score Set <t:{datetime.fromisoformat(score['play_time']).timestamp().__int__()}:R>\n"
@@ -185,43 +178,34 @@ class OsuCog(commands.Cog, name='Osu'):
 
         await paginator.run(embeds)
 
-    @commands.command(
+    @sakuroCommand(
         aliases=['cur', 'c'],
         brief="Shows your best scores on current beatmap.",
         help="Shows your best scores on current beatmap, also you can pass argument for " +
              f"relax or other modes by `{config.PREFIX}current -rx`",
         usage=f"`{config.PREFIX}current [username] [vn/rx/ap] [std/taiko/mania]`"
     )
-    @handle_exception
     @link_required
     @check_args
-    async def current(self, ctx: Context, player: Union[dict, str] = None, mods: str = 'vn',
+    async def current(self, ctx: ContextWrap, player: Union[dict, str] = None, mods: str = 'vn',
                         mode: str = 'std') -> None:
-        if not glob.latest_map.get(ctx.channel.id):
-            embed = Embed(color=ctx.author.color,
-                          description=f"No latest beatmap in this channel.",
-                          timestamp=datetime.now())
-
-            embed.set_author(name="Error!")
-            embed.set_footer(text=choice(config.WORDS))
-            embed.set_thumbnail(url=choice(config.ERROR_GIFS))
-
-            await ctx.send(embed=embed)
+        if not self.bot.cache['latest_maps'].get(ctx.channel.id):
+            await ctx.send(embed=sakuro_error(
+                title="Something went wrong!",
+                error=f"Not found latest beatmap in this channel.",
+                color=ctx.author.color
+            ))
             return
 
         scores = await UserHelper.getUserScores(player['id'], convert_mode_int(mode), mods, 5, 'best',
-                                                glob.latest_map.get(ctx.channel.id))
+                                                self.bot.cache['latest_maps'].get(ctx.channel.id))
 
         if len(scores) == 0:
-            embed = Embed(color=ctx.author.color,
-                          description=f"`{player['name']}` have no scores on this beatmap.",
-                          timestamp=datetime.now())
-
-            embed.set_author(name="Error!")
-            embed.set_footer(text=choice(config.WORDS))
-            embed.set_thumbnail(url=choice(config.ERROR_GIFS))
-
-            await ctx.send(embed=embed)
+            await ctx.send(embed=sakuro_error(
+                title="Something went wrong!",
+                error=f"`{player['name']}` have no scores on this beatmap.",
+                color=ctx.author.color
+            ))
             return
 
         map_fullname = ""
@@ -239,7 +223,7 @@ class OsuCog(commands.Cog, name='Osu'):
 
             description += f"""** {idx + 1}. {f' +{Mods(score["mods"])!r}' if score['mods'] != 0 else ''}** [{calc['stars']:.2f}★]\n""" \
                            f"▸ {convert_grade_emoji(score['grade'])} ▸ **{score['pp']:.2f}PP**" \
-                           f"""{f' *({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' if score['grade'] not in ('S', 'SS', 'X', 'SH') else ''} """ \
+                           f' *({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' if score['grade'] not in ('S', 'SS', 'X', 'SH') else '' \
                            f"▸ {score['acc']:.2f}%\n▸ {score['score']} ▸ x{score['max_combo']}/{score['beatmap']['max_combo']} " \
                            f"▸ [{score['n300']}/{score['n100']}/{score['n50']}/{score['nmiss']}]\n" \
                            f"▸ Score Set <t:{datetime.fromisoformat(score['play_time']).timestamp().__int__()}:R>\n"

@@ -5,16 +5,18 @@ from datetime import datetime
 from cmyui import log, Ansi
 from discord import Member, Embed
 from discord.ext import commands
-from discord.ext.commands import Bot
+
+from objects import config
+from objects.sakuro import Sakuro
 
 
 class WelcomeCog(commands.Cog):
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: Sakuro):
         self.bot = bot
 
     @commands.Cog.listener()
     async def on_member_join(self, member: Member) -> None:
-        if member.guild.id == 809926238851825716:
+        if member.guild.id == config.SAKURU_ID:
             channel = member.guild.system_channel
 
             embed = Embed(title="Hey hey! New player has arrived!",

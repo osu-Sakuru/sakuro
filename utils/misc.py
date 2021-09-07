@@ -1,5 +1,13 @@
 # -*- coding: utf-8 -*-
+from datetime import datetime
+from random import choice
 from typing import Optional
+
+from discord import Embed
+
+from objects import config
+from objects.sakuro import ContextWrap
+
 
 def convert_mode_int(mode: str) -> Optional[int]:
     """Converts mode (str) to mode (int)."""
@@ -84,3 +92,17 @@ def get_level_percent(score: int, base_level: int) -> float:
     difference = _get_required_score_for_level(base_level + 1) - base_levelscore
 
     return score_progress / difference * 100
+
+def sakuru_only(ctx: ContextWrap) -> bool:
+    return ctx.guild.id == config.SAKURU_ID
+
+def sakuro_error(error: str, title: str, color: any) -> Embed:
+    ret = Embed(title=title,
+                description=error,
+                color=color,
+                timestamp=datetime.now())
+
+    ret.set_thumbnail(url=choice(config.ERROR_GIFS))
+    ret.set_footer(text=choice(config.WORDS))
+
+    return ret

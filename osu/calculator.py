@@ -5,11 +5,10 @@ import pathlib
 import sys
 
 from cmyui.osu.oppai_ng import OppaiWrapper
-from typing import Optional, Union
+from typing import Union
 
-import aiofiles
+from objects import glob
 
-from utils import glob
 
 class Calculator:
     def __init__(self) -> None:

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import asyncio
 from datetime import datetime
 
@@ -6,13 +7,13 @@ from cmyui import log, Ansi
 from cmyui.osu import Mods
 from discord import Embed
 from discord.ext import commands
-from discord.ext.commands import Bot, Context
 
+from objects.sakuro import Sakuro, ContextWrap
 from osu.calculator import Calculator
-from utils import glob, config
-from utils.misc import make_safe_name, convert_grade_emoji
-from utils.user import UserHelper
-from utils.wrappers import only_sakuru
+from objects import glob, config
+from utils.misc import make_safe_name, convert_grade_emoji, sakuru_only
+from objects.user import UserHelper
+from utils.wrappers import sakuroCommand
 
 QUEUE_EMOJIS = (
     '1️⃣',
@@ -26,13 +27,13 @@ QUEUE_EMOJIS = (
 class AdminCog(commands.Cog, name='Admin'):
     """Utilities for admins."""
 
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: Sakuro):
         self.bot = bot
         self.hide = True
 
-    @commands.command(name='reload', hidden=True)
+    @sakuroCommand(name='reload', hidden=True)
     @commands.is_owner()
-    async def _reload(self, ctx: Context, module: str):
+    async def _reload(self, ctx: ContextWrap, module: str):
         """Reloads a module."""
         try:
             self.bot.unload_extension(module)
@@ -43,10 +44,16 @@ class AdminCog(commands.Cog, name='Admin'):
         else:
             await ctx.send('\N{OK HAND SIGN}')
 
-    @commands.command(hidden=True)
-    @only_sakuru
+    @sakuroCommand(hidden=True)
+    @commands.is_owner()
+    async def shutdown(self, ctx: ContextWrap) -> None:
+        await ctx.send('Night night..')
+        await self.bot.close()
+
+    @sakuroCommand(hidden=True)
+    @commands.check(sakuru_only)
     @commands.has_permissions(ban_members=True)
-    async def replay(self, ctx: Context, nickname: str, mods: str, map_id: int):
+    async def replay(self, ctx: ContextWrap, nickname: str, mods: str, map_id: int):
         player = await UserHelper.getOsuUserByName(make_safe_name(nickname), 'info')
         description = ""
 
@@ -129,17 +136,17 @@ class AdminCog(commands.Cog, name='Admin'):
 
         await ctx.send(embed=embed)
 
-    @commands.command(hidden=True)
-    @only_sakuru
+    @sakuroCommand(hidden=True)
+    @commands.check(sakuru_only)
     @commands.has_permissions(ban_members=True)
-    async def restrict(self, ctx: Context, nickname: str, *reason: str):
+    async def restrict(self, ctx: ContextWrap, nickname: str, *reason: str):
         if not await UserHelper.getOsuUserByName(make_safe_name(nickname), 'info'):
             return await ctx.send(f"Player with nickname {nickname} not found.")
 
         admin = await UserHelper.getDiscordUser(ctx.message.author.id)
 
         async with glob.http.get("https://osu.sakuru.pw/api/handle_admin",
-                                  params={
+                                 params={
                                       "secret": config.API_SECRET,
                                       "action": "restrict",
                                       "nickname": make_safe_name(nickname),
@@ -151,17 +158,17 @@ class AdminCog(commands.Cog, name='Admin'):
             else:
                 return await ctx.send("Error occurred.")
 
-    @commands.command(hidden=True)
-    @only_sakuru
+    @sakuroCommand(hidden=True)
+    @commands.check(sakuru_only)
     @commands.has_permissions(ban_members=True)
-    async def unrestrict(self, ctx: Context, nickname: str, *reason: str):
+    async def unrestrict(self, ctx: ContextWrap, nickname: str, *reason: str):
         if not await UserHelper.getOsuUserByName(make_safe_name(nickname), 'info'):
             return await ctx.send(f"Player with nickname {nickname} not found.")
 
         admin = await UserHelper.getDiscordUser(ctx.message.author.id)
 
         async with glob.http.get("https://osu.sakuru.pw/api/handle_admin",
-                                  params={
+                                 params={
                                       "secret": config.API_SECRET,
                                       "action": "unrestrict",
                                       "nickname": make_safe_name(nickname),

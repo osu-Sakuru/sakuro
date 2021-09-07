@@ -1,43 +1,11 @@
-import traceback
 from datetime import datetime
 from functools import wraps
-from random import choice
-from sys import exc_info
 
-from cmyui import Ansi, log
 from discord import Embed
 
-from utils import config
-from utils.user import UserHelper
-
-
-def handle_exception(func) -> wraps:
-    """Simple exception handler for commands."""
-
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        ctx = args[1]
-
-        try:
-            return await func(*args, **kwargs)
-        except:
-            err = exc_info()
-            tb = ''.join(traceback.format_tb(err[2]))
-            log(f"Unknown error occurred: {err[1]}\n{tb}", Ansi.RED)
-
-            em = Embed(title="Critical error was occurred!",
-                       description="Please, report it! [Discord](https://discord.gg/N7NVbrJDcx) " +
-                                   "[GitHub](https://github.com/osu-Sakuru/sakuro/issues)\n\n" +
-                                   f"Error: `{err[1]}`\n```sh\n{tb}\n```",
-                       color=ctx.author.color,
-                       timestamp=datetime.now())
-
-            em.set_thumbnail(url=choice(config.ERROR_GIFS))
-            em.set_footer(text=choice(config.WORDS))
-
-            return await ctx.send(embed=em)
-
-    return wrapper
+from objects.sakuro import CommandWrap
+from objects.user import UserHelper
+from utils.misc import sakuro_error
 
 
 def check_args(func) -> wraps:
@@ -70,18 +38,17 @@ def check_args(func) -> wraps:
 
     return wrapper
 
-def only_sakuru(func) -> wraps:
+def sakuroCommand(name=None, cls=None, **attrs):
+    """Custom command wrapper for Sakuro."""
+    if cls is None:
+        cls = CommandWrap
 
-    @wraps(func)
-    async def wrapper(*args, **kwargs):
-        ctx = args[1]
+    def decorator(func):
+        if isinstance(func, CommandWrap):
+            raise TypeError('Callback is already a command.')
+        return cls(func, name=name, **attrs)
 
-        if ctx.guild.id != 809926238851825716:
-            return await ctx.send("no")
-
-        return await func(*args, **kwargs)
-
-    return wrapper
+    return decorator
 
 def link_required(func) -> wraps:
     """Simple wrapper for command that's requires user be linked. NOTE: Use it ONLY with commands."""
@@ -96,7 +63,7 @@ def link_required(func) -> wraps:
                 embed = Embed(title="Notice!",
                               description="Your account should be linked with our bot to use this command. " +
                                           "Please, follow [this link](https://sakuru.pw/settings/socials) to link your account.",
-                              timestamp=datetime.now(), colour=0xeaff00)
+                              timestamp=datetime.now(), color=0xeaff00)
                 embed.set_footer(text='Sakuru.pw private osu! server.')
 
                 return await ctx.send(embed=embed)
@@ -107,7 +74,11 @@ def link_required(func) -> wraps:
                     args = args[:2] + (data,) + args[3:]
         else:
             if not (data := await UserHelper.getOsuUserByName(name, "info")):
-                return await ctx.send(f"User `{name}` not found or didn't exists.")
+                return await ctx.send(embed=sakuro_error(
+                    title=f"Something went wrong!",
+                    error=f"User `{name}` not found or didn't exists.",
+                    color=ctx.author.color
+                ))
             else:
                 args = args[:2] + (data,) + args[3:]
 

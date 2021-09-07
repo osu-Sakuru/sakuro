@@ -9,12 +9,13 @@ import discord
 from cmyui import log, Ansi
 from discord import Embed
 from discord.ext import commands
-from discord.ext.commands import Bot, Context
 
-from utils import config, glob
+from objects import glob, config
+from objects.sakuro import Sakuro, ContextWrap
+from utils.wrappers import sakuroCommand
 
 BASE_HELP = (
-        f"**Prefix:** `{config.PREFIX}`\n**__General info__**\n- If you want to know more about specific " +
+        f"**Prefix:** `{config.PREFIX}` or mention the bot.\n**__General info__**\n- If you want to know more about specific " +
         f"command use `{config.PREFIX}help [command].`\n- If you want to specify argument with spaces, use \"\" i.e " +
         "`\"im a fancy lad\"`.\n- If you are experiencing problems or errors when using the bot, let me know! " +
         "[Discord](https://discord.gg/N7NVbrJDcx) [GitHub](https://github.com/osu-Sakuru/sakuro/issues)\n" +
@@ -27,24 +28,24 @@ BASE_HELP = (
 class MiscCog(commands.Cog, name='Misc'):
     """Misc commands without context."""
 
-    def __init__(self, bot: Bot):
+    def __init__(self, bot: Sakuro):
         self.bot = bot
 
-    @commands.command(
+    @sakuroCommand(
         help="Really, **do not use that.**",
         brief="Command for testing some things (do not use.)",
         usage="<that> (those) [this]"
     )
-    async def test(self, ctx: Context):
+    async def test(self, ctx: ContextWrap):
         pass
 
-    @commands.command(
+    @sakuroCommand(
         brief="Info about Sakuru.pw",
         help="Yes!",
         usage=f"`{config.PREFIX}info`",
         aliases=['stat', 'stats']
     )
-    async def info(self, ctx: Context):
+    async def info(self, ctx: ContextWrap):
         embed = Embed(color=ctx.author.color)
         embed.set_thumbnail(url=self.bot.user.avatar_url)
 
@@ -64,7 +65,7 @@ class MiscCog(commands.Cog, name='Misc'):
         embed.add_field(name="PP system",
                         value=f"[Oppai-ng wrapper](https://github.com/cmyui/cmyui_pkg)")
 
-        diff = time.time() - glob.start_time
+        diff = time.time() - self.bot.uptime
         embed.add_field(name="Uptime",
                         value=f"{timedelta(seconds=int(diff))!s}")
 
@@ -73,11 +74,11 @@ class MiscCog(commands.Cog, name='Misc'):
                 data = (await resp.json())['counts']
                 embed.add_field(name="Total registered",
                                 value=data['total'])
-
-                embed.add_field(name="Online users",
-                                value=data['online'])
             else:
                 pass
+
+        embed.add_field(name="Bot version",
+                        value=self.bot.version)
 
         embed.add_field(name="Thank you!",
                         value="Thank you for you reading this, thank you all who supported Sakuru on early and thanks " +
@@ -87,12 +88,12 @@ class MiscCog(commands.Cog, name='Misc'):
 
         await ctx.send(embed=embed)
 
-    @commands.command(
+    @sakuroCommand(
         brief="Your best friend",
         help="An ancient power created to help all mankind from the torment of the question `how does it work?`",
         usage=f"`{config.PREFIX}help`"
     )
-    async def help(self, ctx: Context, input: str = None):
+    async def help(self, ctx: ContextWrap, input: str = None):
         description = BASE_HELP
         embed = Embed(color=ctx.author.color, description=description)
 
