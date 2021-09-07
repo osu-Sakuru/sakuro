@@ -103,7 +103,7 @@ class Sakuro(commands.Bot):
             'latest_maps': defaultdict(lambda: None)
         }
 
-        self.version = Version(1, 0, 0)
+        self.version = Version(1, 1, 0)
         self.uptime: Optional[int] = None
 
     def when_mentioned_or_prefix(self):

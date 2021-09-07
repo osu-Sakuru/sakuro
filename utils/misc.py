@@ -6,7 +6,6 @@ from typing import Optional
 from discord import Embed
 
 from objects import config
-from objects.sakuro import ContextWrap
 
 
 def convert_mode_int(mode: str) -> Optional[int]:
@@ -93,7 +92,7 @@ def get_level_percent(score: int, base_level: int) -> float:
 
     return score_progress / difference * 100
 
-def sakuru_only(ctx: ContextWrap) -> bool:
+def sakuru_only(ctx) -> bool:
     return ctx.guild.id == config.SAKURU_ID
 
 def sakuro_error(error: str, title: str, color: any) -> Embed:

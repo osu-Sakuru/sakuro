@@ -83,16 +83,21 @@ class OsuCog(commands.Cog, name='Osu'):
             None
         )
 
-        embed = Embed(description=f"▸ {convert_grade_emoji(score['grade'])} ▸ **{score['pp']:.2f}PP**" +
-                                  f' *({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' if score['grade'] not in ('S', 'SS', 'X', 'SH') else '' +
-                                  f"▸ {score['acc']:.2f}%\n▸ {score['score']} ▸ x{score['max_combo']}/{score['beatmap']['max_combo']} " +
-                                  f"▸ [{score['n300']}/{score['n100']}/{score['n50']}/{score['nmiss']}]" +
-                                  f"\n▸ Map Completion: {get_completion(score['time_elapsed'], score['beatmap']['total_length'])}%" if score['grade'] == 'F' else '' +
+        choke_str = f'*({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' \
+            if score['grade'] not in ('S', 'SS', 'X', 'SH') else ''
+        completion_str = f"\n▸ Map Completion: {get_completion(score['time_elapsed'], score['beatmap']['total_length'])}%" \
+            if score['grade'] == 'F' else ''
+
+        embed = Embed(description=f"▸ {convert_grade_emoji(score['grade'])} ▸ **{score['pp']:.2f}PP** {choke_str}" \
+                                  f"▸ {score['acc']:.2f}%\n▸ {score['score']} ▸ x{score['max_combo']}/{score['beatmap']['max_combo']} " \
+                                  f"▸ [{score['n300']}/{score['n100']}/{score['n50']}/{score['nmiss']}]{completion_str}" \
                                   f"\n▸ Score Set <t:{datetime.fromisoformat(score['play_time']).timestamp().__int__()}:R>",
                       timestamp=datetime.fromisoformat(score['play_time']), colour=ctx.author.color)
 
+        mods_str = f' +{Mods(score["mods"])!r} ' \
+            if score['mods'] != 0 else ' '
         embed.set_author(
-            name=calc['map_fullname'] + f' +{Mods(score["mods"])!r}' if score['mods'] != 0 else '' + f"[{calc['stars']:.2f}★]",
+            name=calc['map_fullname'] + mods_str + f"[{calc['stars']:.2f}★]",
             url=f"https://chimu.moe/d/{score['beatmap']['set_id']}",
             icon_url=f"https://a.sakuru.pw/{player['id']}")
 
@@ -142,10 +147,14 @@ class OsuCog(commands.Cog, name='Osu'):
                 None
             )
 
+            choke_str = f'*({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' \
+                if score['grade'] not in ('S', 'SS', 'X', 'SH') else ''
+            mods_str = f' +{Mods(score["mods"])!r}' \
+                if score['mods'] != 0 else ''
+
             description += f"""** {idx + 1}. [{calc['map_fullname']}](https://skuru.pw/direct?id={score['beatmap']['id']})""" \
-                           f' +{Mods(score["mods"])!r}' if score['mods'] != 0 else '' + f"** [{calc['stars']:.2f}★]\n" \
-                           f"▸ {convert_grade_emoji(score['grade'])} ▸ **{score['pp']:.2f}PP**" \
-                           f' *({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' if score['grade'] not in ('S', 'SS', 'X', 'SH') else '' \
+                           f"{mods_str}** [{calc['stars']:.2f}★]\n" \
+                           f"▸ {convert_grade_emoji(score['grade'])} ▸ **{score['pp']:.2f}PP** {choke_str}" \
                            f"▸ {score['acc']:.2f}%\n▸ {score['score']} ▸ x{score['max_combo']}/{score['beatmap']['max_combo']} " \
                            f"▸ [{score['n300']}/{score['n100']}/{score['n50']}/{score['nmiss']}]\n" \
                            f"▸ Score Set <t:{datetime.fromisoformat(score['play_time']).timestamp().__int__()}:R>\n"
@@ -221,9 +230,13 @@ class OsuCog(commands.Cog, name='Osu'):
             )
             map_fullname = calc['map_fullname']
 
-            description += f"""** {idx + 1}. {f' +{Mods(score["mods"])!r}' if score['mods'] != 0 else ''}** [{calc['stars']:.2f}★]\n""" \
-                           f"▸ {convert_grade_emoji(score['grade'])} ▸ **{score['pp']:.2f}PP**" \
-                           f' *({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' if score['grade'] not in ('S', 'SS', 'X', 'SH') else '' \
+            choke_str = f'*({calc["pp"]:.2f}PP for {score["acc"]:.2f}% FC)*' \
+                if score['grade'] not in ('S', 'SS', 'X', 'SH') else ''
+            mods_str = f' +{Mods(score["mods"])!r}' \
+                if score['mods'] != 0 else ''
+
+            description += f"""** {idx + 1}. {mods_str}** [{calc['stars']:.2f}★]\n""" \
+                           f"▸ {convert_grade_emoji(score['grade'])} ▸ **{score['pp']:.2f}PP** {choke_str}" \
                            f"▸ {score['acc']:.2f}%\n▸ {score['score']} ▸ x{score['max_combo']}/{score['beatmap']['max_combo']} " \
                            f"▸ [{score['n300']}/{score['n100']}/{score['n50']}/{score['nmiss']}]\n" \
                            f"▸ Score Set <t:{datetime.fromisoformat(score['play_time']).timestamp().__int__()}:R>\n"
