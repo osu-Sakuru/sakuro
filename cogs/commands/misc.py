@@ -38,26 +38,7 @@ class MiscCog(commands.Cog, name='Misc'):
         usage="<that> (those) [this]"
     )
     async def test(self, ctx: ContextWrap):
-        if not ctx.message.reference:
-            return await ctx.send(embed=sakuro_error(
-                title="Error!",
-                error="You need to `reply` on message with beatmap link.",
-                color=ctx.author.color
-            ))
-
-        reply = await ctx.fetch_message(ctx.message.reference.message_id)
-        beatmap = BEATMAP_REGEX.search(reply.content)
-
-        if beatmap is None:
-            await ctx.send(embed=sakuro_error(
-                title="Error!",
-                error="Beatmap link in message not found.",
-                color=ctx.author.color
-            ))
-
-        print(beatmap.group('bid'))
-
-        await ctx.reply(f'Found beatmap with id `{beatmap.group("bid")}` and set_id `{beatmap.group("sid")}`!')
+        pass
 
     @sakuroCommand(
         brief="Info about Sakuru.pw",
