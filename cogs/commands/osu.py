@@ -42,14 +42,13 @@ class OsuCog(commands.Cog, name='Osu'):
 
         # Donors ♥️
         # NOTE: 48 Premium & Supporter
-        isDonor = scope['info']['priv'] & 48
+        isDonor = f'\n\n**▸ {player["name"]} is a Supporter:** ♥️' if scope['info']['priv'] & 48 else ''
 
-        embed = Embed(description=f"**▸ Official Rank:** #{stats['rank']} " +
-                                  f"({scope['info']['country'].upper()}#{stats['crank']})\n**▸ " +
-                                  f"Level:** {level} ({level_percent:.2f}%)\n**▸ Total PP:** {stats['pp']}\n**▸ " +
-                                  f"Hit Accuracy:** {stats['acc']:.2f}%\n**▸ " +
-                                  f"Playcount:** {stats['plays']}" +
-                                  f'\n\n**▸ {player["name"]} is a Supporter:** ♥️' if isDonor else '',
+        embed = Embed(description=f"**▸ Official Rank:** #{stats['rank']} "
+                                  f"({scope['info']['country'].upper()}#{stats['crank']})\n**▸ "
+                                  f"Level:** {level} ({level_percent:.2f}%)\n**▸ Total PP:** {stats['pp']}\n**▸ "
+                                  f"Hit Accuracy:** {stats['acc']:.2f}%\n**▸ "
+                                  f"Playcount:** {stats['plays']}{isDonor}",
                       timestamp=datetime.now(), colour=0x00ff00)
 
         embed.set_author(name=f"{mode.upper()}!{mods.upper()} Profile for {player['name']}",
@@ -88,9 +87,9 @@ class OsuCog(commands.Cog, name='Osu'):
         completion_str = f"\n▸ Map Completion: {get_completion(score['time_elapsed'], score['beatmap']['total_length'])}%" \
             if score['grade'] == 'F' else ''
 
-        embed = Embed(description=f"▸ {convert_grade_emoji(score['grade'])} ▸ **{score['pp']:.2f}PP** {choke_str}" \
-                                  f"▸ {score['acc']:.2f}%\n▸ {score['score']} ▸ x{score['max_combo']}/{score['beatmap']['max_combo']} " \
-                                  f"▸ [{score['n300']}/{score['n100']}/{score['n50']}/{score['nmiss']}]{completion_str}" \
+        embed = Embed(description=f"▸ {convert_grade_emoji(score['grade'])} ▸ **{score['pp']:.2f}PP** {choke_str}"
+                                  f"▸ {score['acc']:.2f}%\n▸ {score['score']} ▸ x{score['max_combo']}/{score['beatmap']['max_combo']} "
+                                  f"▸ [{score['n300']}/{score['n100']}/{score['n50']}/{score['nmiss']}]{completion_str}"
                                   f"\n▸ Score Set <t:{datetime.fromisoformat(score['play_time']).timestamp().__int__()}:R>",
                       timestamp=datetime.fromisoformat(score['play_time']), colour=ctx.author.color)
 

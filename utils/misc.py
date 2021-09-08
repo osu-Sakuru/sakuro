@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import re
 from datetime import datetime
 from random import choice
 from typing import Optional
@@ -7,6 +8,7 @@ from discord import Embed
 
 from objects import config
 
+BEATMAP_REGEX = re.compile(r'^https://osu\.ppy\.sh/beatmapsets/(?P<sid>\d{1,10})#/?(?P<mode>:?osu|taiko|fruits|mania)?/(?P<bid>\d{1,10})/?$')
 
 def convert_mode_int(mode: str) -> Optional[int]:
     """Converts mode (str) to mode (int)."""
@@ -103,5 +105,33 @@ def sakuro_error(error: str, title: str, color: any) -> Embed:
 
     ret.set_thumbnail(url=choice(config.ERROR_GIFS))
     ret.set_footer(text=choice(config.WORDS))
+
+    return ret
+
+def convert_status_str(status: int) -> str:
+    if status == 0:
+        ret = "⤴️ Pending"
+    elif status == 2:
+        ret = "⭐ Ranked"
+    elif status == 3:
+        ret = "✔️ Approved"
+    elif status == 4:
+        ret = "🆗 Qualified"
+    elif status == 5:
+        ret = "❤️ Loved"
+    else:
+        ret = "Unknown status"
+
+    return ret
+
+def convert_str_status(status: str) -> int:
+    if status == "rank":
+        ret = 2
+    elif status == "unrank":
+        ret = 0
+    elif status == "love":
+        ret = 5
+    else:
+        ret = -1
 
     return ret

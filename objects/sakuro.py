@@ -65,27 +65,29 @@ class CommandWrap(commands.Command):
         await injected(*ctx.args, **ctx.kwargs)
 
 class ContextWrap(commands.Context):
-    async def send(self, *args, **kwargs) -> Optional[discord.Message]:
-        if len(args) == 1 and isinstance(args[0], str):
-            kwargs['content'] = args[0]
+    pass
+    # NOTE: Figure out how to use this with req feature
+    # async def send(self, *args, **kwargs) -> Optional[discord.Message]:
+    #     if len(args) == 1 and isinstance(args[0], str):
+    #         kwargs['content'] = args[0]
 
-        kwargs['embed'] = kwargs.pop('embed', None)
-        kwargs['content'] = kwargs.pop('content', None)
+    #     kwargs['embed'] = kwargs.pop('embed', None)
+    #     kwargs['content'] = kwargs.pop('content', None)
 
-        cached = self.bot.cache['responses'][self.message.id]
+    #     cached = self.bot.cache['responses'][self.message.id]
 
-        if cached and (time.time() - cached['timeout']) <= 0:
-            msg = cached['resp']
-            await msg.edit(**kwargs)
-        else:
-            msg = await super().send(**kwargs)
+    #     if cached and (time.time() - cached['timeout']) <= 0:
+    #         msg = cached['resp']
+    #         await msg.edit(**kwargs)
+    #     else:
+    #         msg = await super().send(**kwargs)
 
-            self.bot.cache['responses'][self.message.id] = {
-                'resp': msg,
-                'timeout': int(time.time()) + 300  # 5 min
-            }
+    #         self.bot.cache['responses'][self.message.id] = {
+    #             'resp': msg,
+    #             'timeout': int(time.time()) + 300  # 5 min
+    #         }
 
-        return msg
+    #     return msg
 
 
 class Sakuro(commands.Bot):
@@ -103,7 +105,7 @@ class Sakuro(commands.Bot):
             'latest_maps': defaultdict(lambda: None)
         }
 
-        self.version = Version(1, 1, 0)
+        self.version = Version(1, 2, 0)
         self.uptime: Optional[int] = None
 
     def when_mentioned_or_prefix(self):

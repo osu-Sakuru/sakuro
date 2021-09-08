@@ -12,16 +12,17 @@ from discord.ext import commands
 
 from objects import glob, config
 from objects.sakuro import Sakuro, ContextWrap
+from utils.misc import BEATMAP_REGEX, sakuro_error
 from utils.wrappers import sakuroCommand
 
 BASE_HELP = (
-        f"**Prefix:** `{config.PREFIX}` or mention the bot.\n**__General info__**\n- If you want to know more about specific " +
-        f"command use `{config.PREFIX}help [command].`\n- If you want to specify argument with spaces, use \"\" i.e " +
-        "`\"im a fancy lad\"`.\n- If you are experiencing problems or errors when using the bot, let me know! " +
-        "[Discord](https://discord.gg/N7NVbrJDcx) [GitHub](https://github.com/osu-Sakuru/sakuro/issues)\n" +
-        "- Explanation of command usage: Arguments are separated by spaces, if argument is in `[]` it means that argument " +
+        f"**Prefix:** `{config.PREFIX}` or mention the bot.\n**__General info__**\n- If you want to know more about specific "
+        f"command use `{config.PREFIX}help [command].`\n- If you want to specify argument with spaces, use \"\" i.e "
+        "`\"im a fancy lad\"`.\n- If you are experiencing problems or errors when using the bot, let me know! "
+        "[Discord](https://discord.gg/N7NVbrJDcx) [GitHub](https://github.com/osu-Sakuru/sakuro/issues)\n"
+        "- Explanation of command usage: Arguments are separated by spaces, if argument is in `[]` it means that argument "
         "is optional; `<>` means that argument is required; `/` means *one of them*.\n"
-        f"- Commands that requires multiple arguments, using `-` prefix i.e.\n`{config.PREFIX}rs alowave -rx -std `\n" +
+        f"- Commands that requires multiple arguments, using `-` prefix i.e.\n`{config.PREFIX}rs alowave -rx -std `\n"
         f"`{config.PREFIX}map -dthdhr -98.5 -2`\n\n__**All commands:**__\n\n"
 )
 
@@ -37,7 +38,26 @@ class MiscCog(commands.Cog, name='Misc'):
         usage="<that> (those) [this]"
     )
     async def test(self, ctx: ContextWrap):
-        pass
+        if not ctx.message.reference:
+            return await ctx.send(embed=sakuro_error(
+                title="Error!",
+                error="You need to `reply` on message with beatmap link.",
+                color=ctx.author.color
+            ))
+
+        reply = await ctx.fetch_message(ctx.message.reference.message_id)
+        beatmap = BEATMAP_REGEX.search(reply.content)
+
+        if beatmap is None:
+            await ctx.send(embed=sakuro_error(
+                title="Error!",
+                error="Beatmap link in message not found.",
+                color=ctx.author.color
+            ))
+
+        print(beatmap.group('bid'))
+
+        await ctx.reply(f'Found beatmap with id `{beatmap.group("bid")}` and set_id `{beatmap.group("sid")}`!')
 
     @sakuroCommand(
         brief="Info about Sakuru.pw",
@@ -47,7 +67,7 @@ class MiscCog(commands.Cog, name='Misc'):
     )
     async def info(self, ctx: ContextWrap):
         embed = Embed(color=ctx.author.color)
-        embed.set_thumbnail(url=self.bot.user.avatar_url)
+        embed.set_thumbnail(url=self.bot.user.avatar.url)
 
         embed.add_field(name="About us!",
                         value="Sakuru.pw is private osu server, based on [gulag](https://github.com/cmyui/gulag) " +

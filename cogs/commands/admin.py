@@ -6,14 +6,18 @@ from datetime import datetime
 from cmyui import log, Ansi
 from cmyui.osu import Mods
 from discord import Embed
+import discord
 from discord.ext import commands
+from discord.ext.commands.core import check
+from discord.threads import Thread
 
 from objects.sakuro import Sakuro, ContextWrap
 from osu.calculator import Calculator
 from objects import glob, config
-from utils.misc import make_safe_name, convert_grade_emoji, sakuru_only
+from utils.misc import convert_status_str, convert_str_status, make_safe_name, convert_grade_emoji, sakuru_only
 from objects.user import UserHelper
 from utils.wrappers import sakuroCommand
+from utils.misc import BEATMAP_REGEX
 
 QUEUE_EMOJIS = (
     '1️⃣',
@@ -154,7 +158,7 @@ class AdminCog(commands.Cog, name='Admin'):
                                       "admin": admin['safe_name']
                                   }) as resp:
             if resp.status == 200:
-                await ctx.send(f"Banned `{nickname}` for `{' '.join(reason)}`.")
+                await ctx.message.add_reaction('\N{OK HAND SIGN}')
             else:
                 return await ctx.send("Error occurred.")
 
@@ -176,9 +180,167 @@ class AdminCog(commands.Cog, name='Admin'):
                                       "admin": admin['safe_name']
                                   }) as resp:
             if resp.status == 200:
-                await ctx.send(f"Unbanned `{nickname}` for `{' '.join(reason)}`.")
+                await ctx.message.add_reaction('\N{OK HAND SIGN}')
             else:
                 return await ctx.send("Error occurred.")
+
+    @sakuroCommand(hidden=True)
+    @commands.check(sakuru_only)
+    @commands.has_permissions(ban_members=True)
+    async def rqmap(self, ctx: ContextWrap, status: str, type: str):
+        if (
+            not isinstance(ctx.message.channel, Thread) or
+            not ctx.message.channel.parent_id == config.MAP_REQS
+        ):
+            return
+        
+        if ctx.message.channel.archived:
+            return
+        
+        msgs = await ctx.message.channel.history(limit=2, oldest_first=True).flatten()
+        
+        first_message = msgs[1]
+
+        bmap = BEATMAP_REGEX.search(first_message.content)
+        
+        if not bmap:
+            return
+
+        admin = await UserHelper.getDiscordUser(ctx.message.author.id)
+
+        if not admin:
+            return await ctx.send('who are yo')
+        
+        if type not in ('map', 'set'):
+            msg = await ctx.reply('Invalid type! (map, set)')
+
+            await msg.delete(delay=15)
+            await ctx.message.delete(delay=15)
+            return
+        
+        if status not in ('love', 'rank', 'unrank'):
+            msg = await ctx.reply('Invalid status! (love, rank, unrank)')
+
+            await msg.delete(delay=15)
+            await ctx.message.delete(delay=15)
+            return
+
+        if type == "map":            
+            params = {
+                "set_id": bmap.group('sid')
+            }
+
+            async with glob.http.get("https://osu.sakuru.pw/api/get_map_info", params=params) as resp:
+                if (
+                        resp and resp.status == 200 and
+                        resp.content.total_bytes != 2  # b'[]'
+                ):
+                    bmaps = await resp.json()
+
+                    embed = Embed(
+                        title=f"Pick a map to edit status on.",
+                        timestamp=datetime.now(),
+                        color=0xeaff00
+                    )
+
+                    description = ""
+                    for idx, bmap in enumerate(bmaps['set']):
+                        description += f"`#{idx + 1}.` **[{bmap['version']}]** - {convert_status_str(int(bmap['status']))}\n"
+                    
+                    embed.description = description
+                    emb_mess = await ctx.send("**Send position in chat to pick a map.**", embed=embed)
+            
+            valid = False
+            while valid is False:
+                try:
+                    reply = await self.bot.wait_for('message', check=lambda x: x.channel == ctx.channel and x.author == ctx.author and x.content.isdecimal(), 
+                                                               timeout=60.0)
+                except asyncio.TimeoutError:
+                    msg = await ctx.send('Time is up!')
+
+                    await msg.delete(delay=15)
+                    await emb_mess.delete(delay=15)
+                    return
+                else:
+                    reply.content = int(reply.content)
+                    if reply.content > len(bmaps) or reply.content <= 0:
+                        msg = await ctx.send('Specified position is out of range.')
+                        
+                        await reply.delete(delay=15)
+                        await msg.delete(delay=15)
+                    else:
+                        if (bm_status := bmaps['set'][reply.content - 1]['status']) == convert_str_status(status):
+                            msg = await ctx.send(f"This map is already {convert_status_str(bm_status)}")
+                            
+                            await msg.delete(delay=15)
+                            await reply.delete(delay=15)
+                        else:
+                            await reply.delete()
+                            await emb_mess.delete()
+
+                            valid = True
+            
+            params = {
+                "secret": config.API_SECRET,
+                "action": "status_map",
+                "admin": admin['safe_name'],
+                "map_id": bmaps['set'][reply.content - 1]['id'],
+                "status": status
+            }
+            async with glob.http.get("https://osu.sakuru.pw/api/handle_admin", params=params) as resp:
+                if resp.status == 200:
+                    await ctx.message.add_reaction('\N{OK HAND SIGN}')
+                else:
+                    pass
+
+        elif type =="set":
+            params = {
+                "set_id": bmap.group('sid')
+            }
+
+            async with glob.http.get("https://osu.sakuru.pw/api/get_map_info", params=params) as resp:
+                if (
+                        resp and resp.status == 200 and
+                        resp.content.total_bytes != 2  # b'[]'
+                ):
+                    bmaps = await resp.json()
+                    
+
+                    if all([x['status'] == convert_str_status(status) for x in bmaps['set']]):
+                        msg = await ctx.send(f"This set is already {convert_status_str(bmaps['set'][0]['status'])}")
+
+                        await ctx.message.delete(delay=15)
+                        await msg.delete(delay=15)
+                        return
+
+            params = {
+                "secret": config.API_SECRET,
+                "action": "status_set",
+                "admin": admin['safe_name'],
+                "set_id": bmap.group('sid'),
+                "status": status
+            }
+
+            async with glob.http.get("https://osu.sakuru.pw/api/handle_admin", params=params) as resp:
+                if resp.status == 200:
+                    await ctx.message.add_reaction('\N{OK HAND SIGN}')
+                else:
+                    pass
+
+    @sakuroCommand(hidden=True)
+    @commands.check(sakuru_only)
+    @commands.has_permissions(ban_members=True)
+    async def rqclose(self, ctx: ContextWrap):
+        if (
+            not isinstance(ctx.message.channel, Thread) or
+            not ctx.message.channel.parent_id == config.MAP_REQS
+        ):
+            return
+        
+        if ctx.message.channel.archived:
+            return
+
+        await ctx.channel.delete()
 
 def setup(bot):
     log(f"Initiated {__name__} cog!", Ansi.CYAN)
