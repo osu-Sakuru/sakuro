@@ -18,7 +18,7 @@ class SakuruCog(commands.Cog):
 
     @commands.Cog.listener(name="on_message")
     async def map_reqs(self, msg: Message) -> None:
-        if msg.guild.id == config.SAKURU_ID and msg.channel.id == config.MAP_REQS and not msg.author.bot:
+        if msg.guild and msg.guild.id == config.SAKURU_ID and msg.channel.id == config.MAP_REQS and not msg.author.bot:
             beatmap = BEATMAP_REGEX.search(msg.content)
 
             if not beatmap:
@@ -34,8 +34,8 @@ class SakuruCog(commands.Cog):
 
                 async with glob.http.get("https://osu.sakuru.pw/api/get_map_info", params=params) as resp:
                     if (
-                            resp and resp.status == 200 and
-                            resp.content.total_bytes != 2  # b'[]'
+                        resp and resp.status == 200 and
+                        resp.content.total_bytes != 2  # b'[]'
                     ):
                         bmaps = (await resp.json())['set']
                         first = bmaps[0]
@@ -49,6 +49,18 @@ class SakuruCog(commands.Cog):
                             return
                         
                         thread = await msg.create_thread(name=chan_name)
+
+                        requests = glob.db.table('map_reqs')
+                        req_id = requests.insert({
+                            'thread_id': thread.id,
+                            'active': True,
+                            'original_id': msg.id,
+                            'requester': msg.author.id,
+                            'beatmap': {
+                                'id': beatmap.group('bid'),
+                                'set_id': beatmap.group('sid')
+                            }
+                        })
                         
                         embed = Embed(
                             title=f"Info about {first['artist']} - {first['title']}.",
@@ -67,7 +79,7 @@ class SakuruCog(commands.Cog):
 
                         embed.set_image(url=f"https://assets.ppy.sh/beatmaps/{first['set_id']}/covers/cover.jpg")
 
-                        await thread.send(msg.content, embed=embed)
+                        await thread.send(f'Request ID: {req_id}', embed=embed)
 
 def setup(bot) -> None:
     log(f"Initiated {__name__} cog!", Ansi.CYAN)

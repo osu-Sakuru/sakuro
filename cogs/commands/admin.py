@@ -6,10 +6,10 @@ from datetime import datetime
 from cmyui import log, Ansi
 from cmyui.osu import Mods
 from discord import Embed
-import discord
 from discord.ext import commands
-from discord.ext.commands.core import check
 from discord.threads import Thread
+from tinydb.operations import set as dbset
+from tinydb.queries import Query
 
 from objects.sakuro import Sakuro, ContextWrap
 from osu.calculator import Calculator
@@ -196,15 +196,11 @@ class AdminCog(commands.Cog, name='Admin'):
         
         if ctx.message.channel.archived:
             return
-        
-        msgs = await ctx.message.channel.history(limit=2, oldest_first=True).flatten()
-        
-        first_message = msgs[1]
 
-        bmap = BEATMAP_REGEX.search(first_message.content)
+        req_table = glob.db.table('map_reqs')
         
-        if not bmap:
-            return
+        Requests = Query()
+        req = req_table.get(Requests.thread_id == ctx.message.channel.id and Requests.active == True)
 
         admin = await UserHelper.getDiscordUser(ctx.message.author.id)
 
@@ -227,7 +223,7 @@ class AdminCog(commands.Cog, name='Admin'):
 
         if type == "map":            
             params = {
-                "set_id": bmap.group('sid')
+                "set_id": req['beatmap']['set_id']
             }
 
             async with glob.http.get("https://osu.sakuru.pw/api/get_map_info", params=params) as resp:
@@ -295,7 +291,7 @@ class AdminCog(commands.Cog, name='Admin'):
 
         elif type =="set":
             params = {
-                "set_id": bmap.group('sid')
+                "set_id": req['beatmap']['set_id']
             }
 
             async with glob.http.get("https://osu.sakuru.pw/api/get_map_info", params=params) as resp:
@@ -317,7 +313,7 @@ class AdminCog(commands.Cog, name='Admin'):
                 "secret": config.API_SECRET,
                 "action": "status_set",
                 "admin": admin['safe_name'],
-                "set_id": bmap.group('sid'),
+                "set_id": req['beatmap']['set_id'],
                 "status": status
             }
 
@@ -336,10 +332,69 @@ class AdminCog(commands.Cog, name='Admin'):
             not ctx.message.channel.parent_id == config.MAP_REQS
         ):
             return
+
+        req_table = glob.db.table('map_reqs')
+        
+        Requests = Query()
+        req_table.update(
+            dbset('active', False),
+            Requests.thread_id == ctx.message.channel.id and Requests.active == True
+        )
+
+        if ctx.message.channel.archived:
+            return
+
+        await ctx.channel.delete()
+    
+    @sakuroCommand(hidden=True)
+    @commands.check(sakuru_only)
+    @commands.has_permissions(ban_members=True)
+    async def rqreject(self, ctx: ContextWrap, *reason: str):
+        if (
+            not isinstance(ctx.message.channel, Thread) or
+            not ctx.message.channel.parent_id == config.MAP_REQS
+        ):
+            return
         
         if ctx.message.channel.archived:
             return
 
+        req_table = glob.db.table('map_reqs')
+        
+        Requests = Query()
+        req = req_table.get(Requests.thread_id == ctx.message.channel.id and Requests.active == True)
+
+        first_message = await ctx.message.channel.parent.fetch_message(req['original_id'])
+        requester = ctx.guild.get_member(req['requester'])
+
+        params = {
+            "id": req['beatmap']['id']
+        }
+        async with glob.http.get("https://osu.sakuru.pw/api/get_map_info", params=params) as resp:
+            if (
+                resp and resp.status == 200 and
+                resp.content.total_bytes != 2  # b'[]'
+            ):
+                bmap = (await resp.json())['map']
+                embed = Embed(
+                    title=f"Map Request: {bmap['artist']} - {bmap['title']}",
+                    color=ctx.author.color,
+                    description=f"Your request has been rejected!\n**Reason:** `{' '.join(reason)}`\n\n**Nominator:** {ctx.author.mention}",
+                    timestamp=datetime.now()
+                )
+
+                embed.set_footer(text="Sakuru.pw osu! Private Server.")
+                embed.set_thumbnail(url=ctx.author.avatar.url)
+
+
+                await requester.send(embed=embed)
+
+        req_table.update(
+            dbset('active', False),
+            Requests.thread_id == ctx.message.channel.id and Requests.active == True
+        )
+
+        await first_message.delete()
         await ctx.channel.delete()
 
 def setup(bot):
