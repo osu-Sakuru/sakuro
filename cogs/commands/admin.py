@@ -333,17 +333,22 @@ class AdminCog(commands.Cog, name='Admin'):
         ):
             return
 
+        if ctx.message.channel.archived:
+            return
+        
         req_table = glob.db.table('map_reqs')
         
         Requests = Query()
+        req = req_table.get(Requests.thread_id == ctx.message.channel.id and Requests.active == True)
+        
         req_table.update(
             dbset('active', False),
             Requests.thread_id == ctx.message.channel.id and Requests.active == True
         )
-
-        if ctx.message.channel.archived:
-            return
-
+        
+        first_message = await ctx.message.channel.parent.fetch_message(req['original_id'])
+        
+        await first_message.delete()
         await ctx.channel.delete()
     
     @sakuroCommand(hidden=True)
