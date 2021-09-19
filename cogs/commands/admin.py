@@ -200,7 +200,7 @@ class AdminCog(commands.Cog, name='Admin'):
         req_table = glob.db.table('map_reqs')
         
         Requests = Query()
-        req = req_table.get(Requests.thread_id == ctx.message.channel.id and Requests.active == True)
+        req = req_table.get((Requests.thread_id == ctx.message.channel.id) & (Requests.active == True))
 
         admin = await UserHelper.getDiscordUser(ctx.message.author.id)
 
@@ -339,7 +339,7 @@ class AdminCog(commands.Cog, name='Admin'):
         req_table = glob.db.table('map_reqs')
         
         Requests = Query()
-        req = req_table.get(Requests.thread_id == ctx.message.channel.id and Requests.active == True)
+        req = req_table.get((Requests.thread_id == ctx.message.channel.id) & (Requests.active == True))
         
         req_table.update(
             dbset('active', False),
@@ -367,7 +367,7 @@ class AdminCog(commands.Cog, name='Admin'):
         req_table = glob.db.table('map_reqs')
         
         Requests = Query()
-        req = req_table.get(Requests.thread_id == ctx.message.channel.id and Requests.active == True)
+        req = req_table.get((Requests.thread_id == ctx.message.channel.id) & (Requests.active == True))
 
         first_message = await ctx.message.channel.parent.fetch_message(req['original_id'])
         requester = ctx.guild.get_member(req['requester'])
