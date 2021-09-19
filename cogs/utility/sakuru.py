@@ -40,6 +40,9 @@ class SakuruCog(commands.Cog):
                         bmaps = (await resp.json())['set']
                         first = bmaps[0]
                         chan_name = f"Conversation of {first['artist']} - {first['title']} by {first['creator']}."
+                        
+                        # XXX: (error code: 50035): Invalid Form Body In name: Must be 100 or fewer in length.
+                        chan_name = (chan_name[:97] + '...') if len(chan_name) > 100 else chan_name
 
                         if discord.utils.find(lambda x: x.name == chan_name, msg.channel.threads) is not None:
                             rply = await msg.reply("This map is already requested.")

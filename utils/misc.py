@@ -110,7 +110,7 @@ def sakuro_error(error: str, title: str, color: any) -> Embed:
 
 def convert_status_str(status: int) -> str:
     if status == 0:
-        ret = "⤴️ Pending"
+        ret = "🪦 Unranked"
     elif status == 2:
         ret = "⭐ Ranked"
     elif status == 3:

@@ -343,7 +343,7 @@ class AdminCog(commands.Cog, name='Admin'):
         
         req_table.update(
             dbset('active', False),
-            Requests.thread_id == ctx.message.channel.id and Requests.active == True
+            doc_ids=[req.doc_id]
         )
         
         first_message = await ctx.message.channel.parent.fetch_message(req['original_id'])
@@ -396,7 +396,7 @@ class AdminCog(commands.Cog, name='Admin'):
 
         req_table.update(
             dbset('active', False),
-            Requests.thread_id == ctx.message.channel.id and Requests.active == True
+            doc_ids=[req.doc_id]
         )
 
         await first_message.delete()

@@ -61,7 +61,7 @@ class OsuCog(commands.Cog, name='Osu'):
         await ctx.send(embed=embed)
 
     @sakuroCommand(
-        aliases=['rs'],
+        aliases=['rs', 'r'],
         brief="Shows your recent score.",
         help="Shows your recent posted score on Sakuru, also you can pass argument for " +
              f"relax or other modes by `{config.PREFIX}recent -rx`",
