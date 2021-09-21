@@ -1,14 +1,30 @@
 # -*- coding: utf-8 -*-
+from enum import IntEnum, unique
 import re
 from datetime import datetime
 from random import choice
 from typing import Optional
 
 from discord import Embed
+from discord.components import C
 
 from objects import config
 
 BEATMAP_REGEX = re.compile(r'^https://osu\.ppy\.sh/beatmapsets/(?P<sid>\d{1,10})#/?(?P<mode>:?osu|taiko|fruits|mania)?/(?P<bid>\d{1,10})/?$')
+
+_win_cond_str = (
+    'Score',
+    'Accuracy',
+    'Combo',
+    'ScoreV2'
+)
+
+_team_types_str = (
+    'Head To Head',
+    'TAG Coop',
+    'TeamVS',
+    'TAG TeamVS'
+)
 
 def convert_mode_int(mode: str) -> Optional[int]:
     """Converts mode (str) to mode (int)."""
@@ -135,3 +151,28 @@ def convert_str_status(status: str) -> int:
         ret = -1
 
     return ret
+
+_actions = {
+    'player_join': '🙋‍♂️ `{}` joined lobby.',
+    'update_teamtype': '❗ Updated match type from `{}` to `{}`.',
+    'update_condition': '🧑‍🦽 Updated win condition from `{}` to `{}`.',
+    'player_left': '🚶‍♂️ `{}` left lobby.',
+    'update_freemods': '🆓 Updated freemods from `{}` to `{}`'
+}
+
+def parse_history(action: str, old_value: Optional[str], new_value: str, users: dict[int, str]) -> str:
+    if old_value is None:
+       return _actions[action].format(users[int(new_value)]['name'])
+    else:
+        match action:
+            case "update_teamtype":
+                return _actions[action].format(_team_types_str[int(old_value)], _team_types_str[int(new_value)])
+            case "update_condition":
+                return _actions[action].format(_win_cond_str[int(old_value)], _win_cond_str[int(new_value)])
+            case "update_freemods":
+                return _actions[action].format(
+                    "Enabled" if old_value == "1" else "Disabled", 
+                    "Enabled" if new_value == "1" else "Disabled"
+                )
+            case _:
+                return "Wrong action."

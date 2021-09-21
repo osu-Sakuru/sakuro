@@ -3,8 +3,13 @@ import platform
 import time
 from datetime import datetime, timedelta
 from random import choice
+
+from cmyui.osu.mods import Mods
+from utils.misc import convert_grade_emoji, parse_history, sakuro_error
 import timeago
 
+import copy
+import DiscordUtils
 import discord
 from cmyui import log, Ansi
 from discord import Embed
@@ -12,7 +17,6 @@ from discord.ext import commands
 
 from objects import glob, config
 from objects.sakuro import Sakuro, ContextWrap
-from utils.misc import BEATMAP_REGEX, sakuro_error
 from utils.wrappers import sakuroCommand
 
 BASE_HELP = (

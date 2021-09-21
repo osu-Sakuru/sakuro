@@ -56,9 +56,9 @@ class UserHelper:
     async def getUserScores(cls, user: Union[int, str], mode: int, table: str, limit: int, scope: str = None,
                             bm: Union[int, str] = None):
         params = {
-            'mode': mode,
             'table': table,
-            'limit': limit
+            'limit': limit,
+            'mode': mode
         }
 
         if type(user) == int:
