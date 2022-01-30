@@ -186,7 +186,14 @@ class AdminCog(commands.Cog, name='Admin'):
 
     @sakuroCommand(hidden=True)
     @commands.check(sakuru_only)
-    @commands.has_permissions(ban_members=True)
+    @commands.has_any_role(
+        # BAT
+        811271693610778645,
+        # ADMIN
+        811271842739519538,
+        # HEAD ADMIN
+        811271454519722005
+    )
     async def rqmap(self, ctx: ContextWrap, status: str, type: str):
         if (
             not isinstance(ctx.message.channel, Thread) or
@@ -325,7 +332,14 @@ class AdminCog(commands.Cog, name='Admin'):
 
     @sakuroCommand(hidden=True)
     @commands.check(sakuru_only)
-    @commands.has_permissions(ban_members=True)
+    @commands.has_any_role(
+        # BAT
+        811271693610778645,
+        # ADMIN
+        811271842739519538,
+        # HEAD ADMIN
+        811271454519722005
+    )
     async def rqclose(self, ctx: ContextWrap):
         if (
             not isinstance(ctx.message.channel, Thread) or
@@ -353,7 +367,14 @@ class AdminCog(commands.Cog, name='Admin'):
     
     @sakuroCommand(hidden=True)
     @commands.check(sakuru_only)
-    @commands.has_permissions(ban_members=True)
+    @commands.has_any_role(
+        # BAT
+        811271693610778645,
+        # ADMIN
+        811271842739519538,
+        # HEAD ADMIN
+        811271454519722005
+    )
     async def rqreject(self, ctx: ContextWrap, *reason: str):
         if (
             not isinstance(ctx.message.channel, Thread) or
