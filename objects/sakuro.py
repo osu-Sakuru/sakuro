@@ -206,7 +206,7 @@ class Sakuro(commands.Bot):
             guild = self.get_guild(config.SAKURU_ID)
 
             role = discord.utils.find(
-                lambda r: r.name == "Premium",
+                lambda r: r.name == "Donor",
                 guild.roles
             )
 

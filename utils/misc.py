@@ -10,7 +10,8 @@ from discord.components import C
 
 from objects import config
 
-BEATMAP_REGEX = re.compile(r'^https://osu\.ppy\.sh/beatmapsets/(?P<sid>\d{1,10})#/?(?P<mode>:?osu|taiko|fruits|mania)?/(?P<bid>\d{1,10})/?$')
+CHO_BEATMAP_REGEX = re.compile(r'^https://osu\.ppy\.sh/beatmapsets/(?P<sid>\d{1,10})#/?(?P<mode>:?osu|taiko|fruits|mania)?/(?P<bid>\d{1,10})/?$')
+SAKURU_BEATMAP_REGEX = re.compile(r'^https://sakuru\.pw/b/(?P<bid>\d{1,10})')
 
 _win_cond_str = (
     'Score',

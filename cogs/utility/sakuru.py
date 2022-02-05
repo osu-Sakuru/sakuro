@@ -9,7 +9,7 @@ from discord.ext import commands
 
 from objects import config, glob
 from objects.sakuro import Sakuro
-from utils.misc import BEATMAP_REGEX, convert_status_str
+from utils.misc import CHO_BEATMAP_REGEX, SAKURU_BEATMAP_REGEX, convert_status_str
 
 
 class SakuruCog(commands.Cog):
@@ -19,18 +19,24 @@ class SakuruCog(commands.Cog):
     @commands.Cog.listener(name="on_message")
     async def map_reqs(self, msg: Message) -> None:
         if msg.guild and msg.guild.id == config.SAKURU_ID and msg.channel.id == config.MAP_REQS and not msg.author.bot:
-            beatmap = BEATMAP_REGEX.search(msg.content)
-
-            if not beatmap:
+            if ((beatmap := CHO_BEATMAP_REGEX.search(msg.content)) is None and
+                (beatmap := SAKURU_BEATMAP_REGEX.search(msg.content)) is None
+            ):
                 reply = await msg.reply("Map not found! You only able to post beatmap links in this channel. "
                                         "This message will be deleted in 30 secs.")
 
                 await reply.delete(delay=30)
                 await msg.delete(delay=30)
             else:
-                params = {
-                    "set_id": beatmap.group('sid')
-                }
+                if (set_id := beatmap.group('sid')) is not None:
+                    params = {
+                        "set_id": set_id
+                    }
+                else:
+                    params = {
+                        "id": beatmap.group('bid'),
+                        "set_from_map": 1
+                    }
 
                 async with glob.http.get("https://api.sakuru.pw/get_map_info", params=params) as resp:
                     if (
