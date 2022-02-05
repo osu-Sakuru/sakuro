@@ -28,7 +28,7 @@ class SakuruCog(commands.Cog):
                 await reply.delete(delay=30)
                 await msg.delete(delay=30)
             else:
-                if (set_id := beatmap.group('sid')) is not None:
+                if (set_id := beatmap.groupdict().get('sid', None)) is not None:
                     params = {
                         "set_id": set_id
                     }
@@ -43,7 +43,9 @@ class SakuruCog(commands.Cog):
                         resp and resp.status == 200 and
                         resp.content.total_bytes != 2  # b'[]'
                     ):
-                        bmaps = (await resp.json())['map']
+                        bmaps_raw = (await resp.json())['map']
+                        bmaps = sorted(bmaps_raw.items(), key=lambda x: x['diff'], reverse=True)
+                        
                         first = bmaps[0]
                         chan_name = f"Conversation of {first['artist']} - {first['title']} by {first['creator']}."
                         
