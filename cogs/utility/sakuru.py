@@ -44,7 +44,7 @@ class SakuruCog(commands.Cog):
                         resp.content.total_bytes != 2  # b'[]'
                     ):
                         bmaps_raw = (await resp.json())['map']
-                        bmaps = sorted(bmaps_raw.items(), key=lambda x: x['diff'], reverse=True)
+                        bmaps = sorted(bmaps_raw, key=lambda x: x['diff'], reverse=True)
                         
                         first = bmaps[0]
                         chan_name = f"Conversation of {first['artist']} - {first['title']} by {first['creator']}."
