@@ -3,7 +3,7 @@ from typing import Optional, Any, Union
 
 from objects import glob, config
 
-BASE_URL = "https://osu.sakuru.pw/api"
+BASE_URL = "https://api.sakuru.pw"
 
 class UserHelper:
     def __init__(self):
