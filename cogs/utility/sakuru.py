@@ -68,8 +68,7 @@ class SakuruCog(commands.Cog):
                             'original_id': msg.id,
                             'requester': msg.author.id,
                             'beatmap': {
-                                'id': beatmap.group('bid'),
-                                'set_id': beatmap.group('sid')
+                                'set_id': first['set_id']
                             }
                         })
                         
