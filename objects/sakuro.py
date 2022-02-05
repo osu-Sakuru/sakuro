@@ -199,7 +199,7 @@ class Sakuro(commands.Bot):
     async def check_donors(self) -> None:
         await self.wait_until_ready()
 
-        async with glob.http.get("https://osu.sakuru.pw/api/get_donors", params={
+        async with glob.http.get("https://api.sakuru.pw/get_donors", params={
             'secret': config.API_SECRET
         }) as resp:
             data = await resp.json()
@@ -213,7 +213,7 @@ class Sakuro(commands.Bot):
             for member in guild.members:
                 donor = discord.utils.find(
                     lambda x: x['discord_id'] == member.id,
-                    data
+                    data['donors']
                 )
 
                 is_expired = donor['donor_end'] < int(time.time()) if donor is not None else None

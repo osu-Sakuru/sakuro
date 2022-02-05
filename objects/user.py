@@ -16,7 +16,7 @@ class UserHelper:
             'secret': config.API_SECRET
         }) as resp:
             if resp.status == 200:
-                return await resp.json()
+                return (await resp.json())['player']
             else:
                 return None
 

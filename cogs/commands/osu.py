@@ -9,7 +9,6 @@ from cmyui.osu import Mods
 from discord import Embed
 from discord.ext import commands
 import discord
-import DiscordUtils
 
 import copy
 from objects.sakuro import Sakuro, ContextWrap
@@ -260,7 +259,7 @@ class OsuCog(commands.Cog, name='Osu'):
         usage=f"`{config.PREFIX}getmatch <match ID>`"
     )
     async def getmatch(self, ctx: ContextWrap, match_id: int) -> None:
-        async with glob.http.get(f"https://osu.sakuru.pw/api/get_match?id={match_id}") as resp:
+        async with glob.http.get(f"https://api.sakuru.pw/get_match?id={match_id}") as resp:
             if (
                 resp and resp.status == 200 and
                 resp.content.total_bytes != 2
@@ -310,7 +309,7 @@ class OsuCog(commands.Cog, name='Osu'):
                             data['games']
                         )
 
-                        req = await glob.http.get("https://api.sakuru.pw/api/get_map_info", params={'id':game_data['beatmap_id']})
+                        req = await glob.http.get("https://api.sakuru.pw/get_map_info", params={'id':game_data['beatmap_id']})
                         bmap = (await req.json())['map']
 
                         temp_desc += f"\n🎲 Game played <t:{game_data['start_time']}:f>\n" \

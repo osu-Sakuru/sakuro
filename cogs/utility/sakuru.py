@@ -32,12 +32,12 @@ class SakuruCog(commands.Cog):
                     "set_id": beatmap.group('sid')
                 }
 
-                async with glob.http.get("https://api.sakuru.pw/api/get_map_info", params=params) as resp:
+                async with glob.http.get("https://api.sakuru.pw/get_map_info", params=params) as resp:
                     if (
                         resp and resp.status == 200 and
                         resp.content.total_bytes != 2  # b'[]'
                     ):
-                        bmaps = (await resp.json())['set']
+                        bmaps = (await resp.json())['map']
                         first = bmaps[0]
                         chan_name = f"Conversation of {first['artist']} - {first['title']} by {first['creator']}."
                         

@@ -71,7 +71,7 @@ class MiscCog(commands.Cog, name='Misc'):
         embed.add_field(name="Uptime",
                         value=f"{timedelta(seconds=int(diff))!s}")
 
-        async with glob.http.get("https://api.sakuru.pw/api/get_player_count") as resp:
+        async with glob.http.get("https://api.sakuru.pw/get_player_count") as resp:
             if resp.status == 200:
                 data = (await resp.json())['counts']
                 embed.add_field(name="Total registered",
