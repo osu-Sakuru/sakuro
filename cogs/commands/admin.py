@@ -17,7 +17,6 @@ from objects import glob, config
 from utils.misc import convert_status_str, convert_str_status, make_safe_name, convert_grade_emoji, sakuru_only
 from objects.user import UserHelper
 from utils.wrappers import sakuroCommand
-from utils.misc import BEATMAP_REGEX
 
 QUEUE_EMOJIS = (
     '1️⃣',
