@@ -164,15 +164,16 @@ def parse_history(action: str, old_value: Optional[str], new_value: str, users: 
     if old_value is None:
        return _actions[action].format(users[int(new_value)]['name'])
     else:
-        match action:
-            case "update_teamtype":
-                return _actions[action].format(_team_types_str[int(old_value)], _team_types_str[int(new_value)])
-            case "update_condition":
-                return _actions[action].format(_win_cond_str[int(old_value)], _win_cond_str[int(new_value)])
-            case "update_freemods":
-                return _actions[action].format(
-                    "Enabled" if old_value == "1" else "Disabled", 
-                    "Enabled" if new_value == "1" else "Disabled"
-                )
-            case _:
-                return "Wrong action."
+        # match action:
+        #     case "update_teamtype":
+        #         return _actions[action].format(_team_types_str[int(old_value)], _team_types_str[int(new_value)])
+        #     case "update_condition":
+        #         return _actions[action].format(_win_cond_str[int(old_value)], _win_cond_str[int(new_value)])
+        #     case "update_freemods":
+        #         return _actions[action].format(
+        #             "Enabled" if old_value == "1" else "Disabled", 
+        #             "Enabled" if new_value == "1" else "Disabled"
+        #         )
+        #     case _:
+        #         return "Wrong action."
+        ...

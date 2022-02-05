@@ -32,7 +32,7 @@ class SakuruCog(commands.Cog):
                     "set_id": beatmap.group('sid')
                 }
 
-                async with glob.http.get("https://osu.sakuru.pw/api/get_map_info", params=params) as resp:
+                async with glob.http.get("https://api.sakuru.pw/api/get_map_info", params=params) as resp:
                     if (
                         resp and resp.status == 200 and
                         resp.content.total_bytes != 2  # b'[]'

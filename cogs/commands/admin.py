@@ -128,7 +128,7 @@ class AdminCog(commands.Cog, name='Admin'):
                            f"▸ {score['acc']:.2f}%\n▸ {score['score']} ▸ x{score['max_combo']}/{score['beatmap']['max_combo']} " \
                            f"▸ [{score['n300']}/{score['n100']}/{score['n50']}/{score['nmiss']}]\n" \
                            f"▸ [Score Set <t:{datetime.fromisoformat(score['play_time']).timestamp().__int__()}:R>]" \
-                           f"(https://osu.sakuru.pw/api/get_replay?id={score['id']})\n"
+                           f"(https://api.sakuru.pw/api/get_replay?id={score['id']})\n"
 
         embed = Embed(color=ctx.author.color, description=description)
 
@@ -149,7 +149,7 @@ class AdminCog(commands.Cog, name='Admin'):
 
         admin = await UserHelper.getDiscordUser(ctx.message.author.id)
 
-        async with glob.http.get("https://osu.sakuru.pw/api/handle_admin",
+        async with glob.http.get("https://api.sakuru.pw/api/handle_admin",
                                  params={
                                       "secret": config.API_SECRET,
                                       "action": "restrict",
@@ -171,7 +171,7 @@ class AdminCog(commands.Cog, name='Admin'):
 
         admin = await UserHelper.getDiscordUser(ctx.message.author.id)
 
-        async with glob.http.get("https://osu.sakuru.pw/api/handle_admin",
+        async with glob.http.get("https://api.sakuru.pw/api/handle_admin",
                                  params={
                                       "secret": config.API_SECRET,
                                       "action": "unrestrict",
@@ -233,7 +233,7 @@ class AdminCog(commands.Cog, name='Admin'):
                 "set_id": req['beatmap']['set_id']
             }
 
-            async with glob.http.get("https://osu.sakuru.pw/api/get_map_info", params=params) as resp:
+            async with glob.http.get("https://api.sakuru.pw/api/get_map_info", params=params) as resp:
                 if (
                         resp and resp.status == 200 and
                         resp.content.total_bytes != 2  # b'[]'
@@ -290,7 +290,7 @@ class AdminCog(commands.Cog, name='Admin'):
                 "map_id": bmaps['set'][reply.content - 1]['id'],
                 "status": status
             }
-            async with glob.http.get("https://osu.sakuru.pw/api/handle_admin", params=params) as resp:
+            async with glob.http.get("https://api.sakuru.pw/api/handle_admin", params=params) as resp:
                 if resp.status == 200:
                     await ctx.message.add_reaction('\N{OK HAND SIGN}')
                 else:
@@ -301,7 +301,7 @@ class AdminCog(commands.Cog, name='Admin'):
                 "set_id": req['beatmap']['set_id']
             }
 
-            async with glob.http.get("https://osu.sakuru.pw/api/get_map_info", params=params) as resp:
+            async with glob.http.get("https://api.sakuru.pw/api/get_map_info", params=params) as resp:
                 if (
                         resp and resp.status == 200 and
                         resp.content.total_bytes != 2  # b'[]'
@@ -324,7 +324,7 @@ class AdminCog(commands.Cog, name='Admin'):
                 "status": status
             }
 
-            async with glob.http.get("https://osu.sakuru.pw/api/handle_admin", params=params) as resp:
+            async with glob.http.get("https://api.sakuru.pw/api/handle_admin", params=params) as resp:
                 if resp.status == 200:
                     await ctx.message.add_reaction('\N{OK HAND SIGN}')
                 else:
@@ -396,7 +396,7 @@ class AdminCog(commands.Cog, name='Admin'):
         params = {
             "id": req['beatmap']['id']
         }
-        async with glob.http.get("https://osu.sakuru.pw/api/get_map_info", params=params) as resp:
+        async with glob.http.get("https://api.sakuru.pw/api/get_map_info", params=params) as resp:
             if (
                 resp and resp.status == 200 and
                 resp.content.total_bytes != 2  # b'[]'

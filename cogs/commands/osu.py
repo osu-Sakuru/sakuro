@@ -310,7 +310,7 @@ class OsuCog(commands.Cog, name='Osu'):
                             data['games']
                         )
 
-                        req = await glob.http.get("https://osu.sakuru.pw/api/get_map_info", params={'id':game_data['beatmap_id']})
+                        req = await glob.http.get("https://api.sakuru.pw/api/get_map_info", params={'id':game_data['beatmap_id']})
                         bmap = (await req.json())['map']
 
                         temp_desc += f"\n🎲 Game played <t:{game_data['start_time']}:f>\n" \
