@@ -164,7 +164,7 @@ class AdminCog(commands.Cog, name='Admin'):
 @sakuroCommand(hidden=True)
 @commands.check(sakuru_only)
 @commands.has_permissions(ban_members=True)
-async def wipe(self, ctx: ContextWrap, nickname: str, *reason: str):
+async def wipe(self, ctx: ContextWrap, nickname: str):
     if not await UserHelper.getOsuUserByName(make_safe_name(nickname), 'info'):
         return await ctx.send(f"Player with nickname {nickname} not found.")
 
