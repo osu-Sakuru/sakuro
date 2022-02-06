@@ -161,26 +161,26 @@ class AdminCog(commands.Cog, name='Admin'):
             else:
                 return await ctx.send("Error occurred.")
     
-@sakuroCommand(hidden=True)
-@commands.check(sakuru_only)
-@commands.has_permissions(ban_members=True)
-async def wipe(self, ctx: ContextWrap, nickname: str):
-    if not await UserHelper.getOsuUserByName(make_safe_name(nickname), 'info'):
-        return await ctx.send(f"Player with nickname {nickname} not found.")
+    @sakuroCommand(hidden=True)
+    @commands.check(sakuru_only)
+    @commands.has_permissions(ban_members=True)
+    async def wipe(self, ctx: ContextWrap, nickname: str):
+        if not await UserHelper.getOsuUserByName(make_safe_name(nickname), 'info'):
+            return await ctx.send(f"Player with nickname {nickname} not found.")
 
-    admin = await UserHelper.getDiscordUser(ctx.message.author.id)
+        admin = await UserHelper.getDiscordUser(ctx.message.author.id)
 
-    async with glob.http.get("https://api.sakuru.pw/handle_admin",
-                                params={
-                                    "secret": config.API_SECRET,
-                                    "action": "wipe",
-                                    "nickname": make_safe_name(nickname),
-                                    "admin": admin['safe_name']
-                                }) as resp:
-        if resp.status == 200:
-            await ctx.message.add_reaction('\N{OK HAND SIGN}')
-        else:
-            return await ctx.send("Error occurred.")
+        async with glob.http.get("https://api.sakuru.pw/handle_admin",
+                                    params={
+                                        "secret": config.API_SECRET,
+                                        "action": "wipe",
+                                        "nickname": make_safe_name(nickname),
+                                        "admin": admin['safe_name']
+                                    }) as resp:
+            if resp.status == 200:
+                await ctx.message.add_reaction('\N{OK HAND SIGN}')
+            else:
+                return await ctx.send("Error occurred.")
 
     @sakuroCommand(hidden=True)
     @commands.check(sakuru_only)
