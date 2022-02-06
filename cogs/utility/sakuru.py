@@ -19,7 +19,8 @@ class SakuruCog(commands.Cog):
     @commands.Cog.listener(name="on_message")
     async def map_reqs(self, msg: Message) -> None:
         if msg.guild and msg.guild.id == config.SAKURU_ID and msg.channel.id == config.MAP_REQS and not msg.author.bot:
-            if ((beatmap := CHO_BEATMAP_REGEX.search(msg.content)) is None and
+            if (
+                (beatmap := CHO_BEATMAP_REGEX.search(msg.content)) is None and
                 (beatmap := SAKURU_BEATMAP_REGEX.search(msg.content)) is None
             ):
                 reply = await msg.reply("Map not found! You only able to post beatmap links in this channel. "
@@ -45,7 +46,7 @@ class SakuruCog(commands.Cog):
                     ):
                         bmaps_raw = (await resp.json())['map']
                         bmaps = sorted(bmaps_raw, key=lambda x: x['diff'], reverse=True)
-                        
+
                         first = bmaps[0]
                         chan_name = f"Conversation of {first['artist']} - {first['title']} by {first['creator']}."
                         
