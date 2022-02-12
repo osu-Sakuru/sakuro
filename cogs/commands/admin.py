@@ -148,7 +148,7 @@ class AdminCog(commands.Cog, name='Admin'):
 
         admin = await UserHelper.getDiscordUser(ctx.message.author.id)
 
-        async with glob.http.get("https://api.sakuru.pw/handle_admin",
+        async with glob.http.post("https://api.sakuru.pw/handle_admin",
                                  params={
                                       "secret": config.API_SECRET,
                                       "action": "restrict",
@@ -170,7 +170,7 @@ class AdminCog(commands.Cog, name='Admin'):
 
         admin = await UserHelper.getDiscordUser(ctx.message.author.id)
 
-        async with glob.http.get("https://api.sakuru.pw/handle_admin",
+        async with glob.http.post("https://api.sakuru.pw/handle_admin",
                                     params={
                                         "secret": config.API_SECRET,
                                         "action": "wipe",
@@ -191,7 +191,7 @@ class AdminCog(commands.Cog, name='Admin'):
 
         admin = await UserHelper.getDiscordUser(ctx.message.author.id)
 
-        async with glob.http.get("https://api.sakuru.pw/handle_admin",
+        async with glob.http.post("https://api.sakuru.pw/handle_admin",
                                  params={
                                       "secret": config.API_SECRET,
                                       "action": "unrestrict",
