@@ -310,7 +310,7 @@ class AdminCog(commands.Cog, name='Admin'):
                 "map_id": bmaps['set'][reply.content - 1]['id'],
                 "status": status
             }
-            async with glob.http.get("https://api.sakuru.pw/handle_admin", params=params) as resp:
+            async with glob.http.post("https://api.sakuru.pw/handle_admin", params=params) as resp:
                 if resp.status == 200:
                     await ctx.message.add_reaction('\N{OK HAND SIGN}')
                 else:
@@ -344,7 +344,7 @@ class AdminCog(commands.Cog, name='Admin'):
                 "status": status
             }
 
-            async with glob.http.get("https://api.sakuru.pw/handle_admin", params=params) as resp:
+            async with glob.http.post("https://api.sakuru.pw/handle_admin", params=params) as resp:
                 if resp.status == 200:
                     await ctx.message.add_reaction('\N{OK HAND SIGN}')
                 else:
