@@ -307,7 +307,7 @@ class AdminCog(commands.Cog, name='Admin'):
                 "secret": config.API_SECRET,
                 "action": "status_map",
                 "admin": admin['safe_name'],
-                "map_id": bmaps['set'][reply.content - 1]['id'],
+                "map_id": bmaps['map'][reply.content - 1]['id'],
                 "status": status
             }
             async with glob.http.post("https://api.sakuru.pw/handle_admin", params=params) as resp:
