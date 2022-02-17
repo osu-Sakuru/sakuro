@@ -292,7 +292,7 @@ class AdminCog(commands.Cog, name='Admin'):
                         await reply.delete(delay=15)
                         await msg.delete(delay=15)
                     else:
-                        if (bm_status := bmaps['set'][reply.content - 1]['status']) == convert_str_status(status):
+                        if (bm_status := bmaps['map'][reply.content - 1]['status']) == convert_str_status(status):
                             msg = await ctx.send(f"This map is already {convert_status_str(bm_status)}")
                             
                             await msg.delete(delay=15)
