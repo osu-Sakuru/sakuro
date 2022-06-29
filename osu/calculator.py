@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-
 import os
 import pathlib
 import sys
+from typing import Union
 
 from cmyui.osu.oppai_ng import OppaiWrapper
-from typing import Union
 
 from objects import glob
 
@@ -15,7 +14,9 @@ class Calculator:
         pass
 
     @classmethod
-    async def getOsuFile(cls: 'Calculator', beatmap_id: int) -> Union[bool, pathlib.Path]:
+    async def getOsuFile(
+        cls: "Calculator", beatmap_id: int
+    ) -> Union[bool, pathlib.Path]:
         path = pathlib.Path(f"{os.getcwd()}/osu/beatmaps/{beatmap_id}.osu")
 
         if not path.is_file():
@@ -31,14 +32,21 @@ class Calculator:
             return path
 
     @classmethod
-    async def calculate(cls: 'Calculator', beatmap_id: int,
-                        mode: int = 0, mods: int = None, acc: float = None,
-                        combo: int = None, miss: int = None, score: int = None) -> ['Calculator']:
+    async def calculate(
+        cls: "Calculator",
+        beatmap_id: int,
+        mode: int = 0,
+        mods: int = None,
+        acc: float = None,
+        combo: int = None,
+        miss: int = None,
+        score: int = None,
+    ) -> ["Calculator"]:
         beatmap_file = pathlib.Path(f"{os.getcwd()}/osu/beatmaps/{beatmap_id}.osu")
         oppai_path = pathlib.Path(os.getcwd())
 
         # TODO: Windows support? [WinError 193] %1 is not a valid Win32 application
-        if sys.platform.startswith('win'):
+        if sys.platform.startswith("win"):
             oppai_path = oppai_path / "oppai.exe"
         else:
             oppai_path = oppai_path / "liboppai.so"
@@ -60,11 +68,11 @@ class Calculator:
                 ezpp.calculate(beatmap_file)
 
                 return {
-                    'map_id': beatmap_id,
-                    'pp': ezpp.get_pp(),
-                    'stars': ezpp.get_sr(),
-                    'map_creator': str(ezpp.get_creator(), 'utf-8'),
-                    'map_fullname': f"{str(ezpp.get_artist(), 'utf-8')} - {str(ezpp.get_title(), 'utf-8')} [{str(ezpp.get_version(), 'utf-8')}]"
+                    "map_id": beatmap_id,
+                    "pp": ezpp.get_pp(),
+                    "stars": ezpp.get_sr(),
+                    "map_creator": str(ezpp.get_creator(), "utf-8"),
+                    "map_fullname": f"{str(ezpp.get_artist(), 'utf-8')} - {str(ezpp.get_title(), 'utf-8')} [{str(ezpp.get_version(), 'utf-8')}]",
                 }
         elif mode == 2:
             return cls

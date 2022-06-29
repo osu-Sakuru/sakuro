@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-
 from datetime import datetime
 
-from cmyui import log, Ansi
-from discord import Member, Embed
+from cmyui import Ansi
+from cmyui import log
+from discord import Embed
+from discord import Member
 from discord.ext import commands
 
 from objects import config
@@ -19,17 +20,20 @@ class WelcomeCog(commands.Cog):
         if member.guild.id == config.SAKURU_ID:
             channel = member.guild.system_channel
 
-            embed = Embed(title="Hey hey! New player has arrived!",
-                          description=f"Welcome to Sakuru.pw discord server {member.mention}! " +
-                                      "Hope you enjoy it here and be Happy! If you want use Sakuro " +
-                                      "please, follow [this link](https://sakuru.pw/settings/socials) to link your account.",
-                          timestamp=datetime.now(),
-                          colour=0xeaff00)
+            embed = Embed(
+                title="Hey hey! New player has arrived!",
+                description=f"Welcome to Sakuru.pw discord server {member.mention}! "
+                + "Hope you enjoy it here and be Happy! If you want use Sakuro "
+                + "please, follow [this link](https://sakuru.pw/settings/socials) to link your account.",
+                timestamp=datetime.now(),
+                colour=0xEAFF00,
+            )
 
             embed.set_thumbnail(url="https://sakuru.pw/static/ingame.png")
-            embed.set_footer(text='Sakuru.pw private osu! server.')
+            embed.set_footer(text="Sakuru.pw private osu! server.")
 
             await channel.send(embed=embed)
+
 
 async def setup(bot) -> None:
     log(f"Initiated {__name__} cog!", Ansi.CYAN)

@@ -1,10 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__all__ = (
-    'ContextWrap',
-    'Sakuro',
-    'CommandWrap'
-)
+__all__ = ("ContextWrap", "Sakuro", "CommandWrap")
 
 import asyncio
 import functools
@@ -36,16 +32,18 @@ def sakuro_wrapped_callback(command, ctx, coro):
             ctx.command_failed = True
 
             err = exc_info()
-            tb = ''.join(traceback.format_tb(err[2]))
+            tb = "".join(traceback.format_tb(err[2]))
             log(f"Unknown error occurred: {err[1]}\n{tb}", Ansi.RED)
 
-            return await ctx.send(embed=sakuro_error(
-                title="Critical error was occurred!",
-                error="Please, report it! [Discord](https://discord.gg/N7NVbrJDcx) " +
-                      "[GitHub](https://github.com/osu-Sakuru/sakuro/issues)\n\n" +
-                      f"Error: `{err[1]}`\n```sh\n{tb}\n```",
-                color=ctx.author.color
-            ))
+            return await ctx.send(
+                embed=sakuro_error(
+                    title="Critical error was occurred!",
+                    error="Please, report it! [Discord](https://discord.gg/N7NVbrJDcx) "
+                    + "[GitHub](https://github.com/osu-Sakuru/sakuro/issues)\n\n"
+                    + f"Error: `{err[1]}`\n```sh\n{tb}\n```",
+                    color=ctx.author.color,
+                )
+            )
         finally:
             if command._max_concurrency is not None:
                 await command._max_concurrency.release(ctx)
@@ -55,6 +53,7 @@ def sakuro_wrapped_callback(command, ctx, coro):
 
     return wrapped
 
+
 class CommandWrap(commands.Command):
     async def invoke(self, ctx):
         await self.prepare(ctx)
@@ -63,6 +62,7 @@ class CommandWrap(commands.Command):
         ctx.subcommand_passed = None
         injected = sakuro_wrapped_callback(self, ctx, self.callback)
         await injected(*ctx.args, **ctx.kwargs)
+
 
 class ContextWrap(commands.Context):
     pass
@@ -91,18 +91,19 @@ class ContextWrap(commands.Context):
 
 
 class Sakuro(commands.Bot):
-    __slots__ = ('loop', 'cache', 'version', 'uptime')
+    __slots__ = ("loop", "cache", "version", "uptime")
 
     def __init__(self, **kwargs) -> None:
         super().__init__(
             owner_id=config.OWNER,
             command_prefix=self.when_mentioned_or_prefix(),
-            help_command=None, **kwargs
+            help_command=None,
+            **kwargs,
         )
 
         self.cache = {
-            'responses': defaultdict(lambda: None),
-            'latest_maps': defaultdict(lambda: None)
+            "responses": defaultdict(lambda: None),
+            "latest_maps": defaultdict(lambda: None),
         }
 
         self.version = Version(1, 2, 0)
@@ -118,18 +119,21 @@ class Sakuro(commands.Bot):
     # Custom error handler implementation
     async def invoke(self, ctx):
         if ctx.command is not None:
-            self.dispatch('command', ctx)
+            self.dispatch("command", ctx)
             if await self.can_run(ctx, call_once=True):
                 await ctx.command.invoke(ctx)
             else:
-                raise errors.CheckFailure('The global check once functions failed.')
-            self.dispatch('command_completion', ctx)
+                raise errors.CheckFailure("The global check once functions failed.")
+            self.dispatch("command_completion", ctx)
         elif ctx.invoked_with:
-            exc = errors.CommandNotFound('Command "{}" is not found'.format(ctx.invoked_with))
-            self.dispatch('command_error', ctx, exc)
+            exc = errors.CommandNotFound(
+                'Command "{}" is not found'.format(ctx.invoked_with)
+            )
+            self.dispatch("command_error", ctx, exc)
 
-    async def on_message_edit(self, before: discord.Message,
-                              after: discord.Message) -> None:
+    async def on_message_edit(
+        self, before: discord.Message, after: discord.Message
+    ) -> None:
         await self.wait_until_ready()
 
         if not after.content or after.author.bot:
@@ -142,18 +146,20 @@ class Sakuro(commands.Bot):
             await self.process_commands(after)
 
     async def on_message_delete(self, msg: discord.Message) -> None:
-        cached = self.cache['responses'][msg.id]
+        cached = self.cache["responses"][msg.id]
 
         if cached:
             try:
-                await cached['resp'].delete()
+                await cached["resp"].delete()
             except discord.NotFound:
                 pass
 
-            del self.cache['responses'][msg.id]
+            del self.cache["responses"][msg.id]
 
     async def on_ready(self) -> None:
         self.uptime = time.time()
+
+        log("Bot is up and ready!", Ansi.LGREEN)
 
     async def close(self) -> None:
         await super().close()
@@ -165,19 +171,25 @@ class Sakuro(commands.Bot):
             ctx = await self.get_context(message, cls=ContextWrap)
             await self.invoke(ctx)
 
-    async def on_command_error(self, ctx: ContextWrap, error: commands.CommandError) -> None:
+    async def on_command_error(
+        self, ctx: ContextWrap, error: commands.CommandError
+    ) -> None:
         if isinstance(error, commands.CommandNotFound):
-            await ctx.send(embed=sakuro_error(
-                title="Command not found!",
-                error=f"Check your spelling or type `{config.PREFIX}help`",
-                color=ctx.author.color
-            ))
+            await ctx.send(
+                embed=sakuro_error(
+                    title="Command not found!",
+                    error=f"Check your spelling or type `{config.PREFIX}help`",
+                    color=ctx.author.color,
+                )
+            )
         elif isinstance(error, commands.MissingRequiredArgument):
-            await ctx.send(embed=sakuro_error(
-                title="Error!",
-                error=f"Check your spelling or type `{config.PREFIX}help`\n\nError: `{error}`",
-                color=ctx.author.color
-            ))
+            await ctx.send(
+                embed=sakuro_error(
+                    title="Error!",
+                    error=f"Check your spelling or type `{config.PREFIX}help`\n\nError: `{error}`",
+                    color=ctx.author.color,
+                )
+            )
         else:
             return
 
@@ -187,36 +199,36 @@ class Sakuro(commands.Bot):
 
         async with glob.http.get("https://api.sakuru.pw/get_player_count") as resp:
             if resp.status == 200:
-                data = (await resp.json())['counts']
+                data = (await resp.json())["counts"]
                 await self.change_presence(
-                    activity=discord.Activity(type=discord.ActivityType.watching,
-                                              name=f"Sakuru online: {data['online']} Total: {data['total']}")
+                    activity=discord.Activity(
+                        type=discord.ActivityType.watching,
+                        name=f"Sakuru online: {data['online']} Total: {data['total']}",
+                    )
                 )
             else:
-                log('Error while rerolling bot status', Ansi.RED)
+                log("Error while rerolling bot status", Ansi.RED)
 
     @tasks.loop(seconds=30)
     async def check_donors(self) -> None:
         await self.wait_until_ready()
 
-        async with glob.http.get("https://api.sakuru.pw/get_donors", params={
-            'secret': config.API_SECRET
-        }) as resp:
+        async with glob.http.get(
+            "https://api.sakuru.pw/get_donors", params={"secret": config.API_SECRET}
+        ) as resp:
             data = await resp.json()
             guild = self.get_guild(config.SAKURU_ID)
 
-            role = discord.utils.find(
-                lambda r: r.name == "Donor",
-                guild.roles
-            )
+            role = discord.utils.find(lambda r: r.name == "Donor", guild.roles)
 
             for member in guild.members:
                 donor = discord.utils.find(
-                    lambda x: x['discord_id'] == member.id,
-                    data['donors']
+                    lambda x: x["discord_id"] == member.id, data["donors"]
                 )
 
-                is_expired = donor['donor_end'] < int(time.time()) if donor is not None else None
+                is_expired = (
+                    donor["donor_end"] < int(time.time()) if donor is not None else None
+                )
 
                 if role in member.roles:
                     if donor is None:
@@ -224,11 +236,7 @@ class Sakuro(commands.Bot):
                     else:
                         if is_expired:
                             await member.remove_roles(role)
-                elif (
-                      donor is not None and
-                      role not in member.roles and
-                      not is_expired
-                ):
+                elif donor is not None and role not in member.roles and not is_expired:
                     await member.add_roles(role)
 
     def run(self, *args, **kwargs) -> None:
@@ -236,27 +244,29 @@ class Sakuro(commands.Bot):
             glob.client = Sakuro
 
             # ## DATABASE CONNECT ## #
-            log('Settinng up database...', Ansi.MAGENTA)
-            glob.db = TinyDB('./db/database.json')
-            log('Database ready!', Ansi.LGREEN)
+            log("Settinng up database...", Ansi.MAGENTA)
+            glob.db = TinyDB("./db/database.json")
+            log("Database ready!", Ansi.LGREEN)
             # ## DATABASE CONNECT END ## #
 
             # ## HTTP SESSION ## #
             glob.http = aiohttp.ClientSession(json_serialize=orjson.dumps)
-            log('Created HTTP session!', Ansi.LGREEN)
+            log("Created HTTP session!", Ansi.LGREEN)
             # ## HTTP SESSION END ## #
 
-            log('Initiating Cogs...', Ansi.LMAGENTA)
-            for cog_dir in os.listdir('./cogs'):
+            log("Initiating Cogs...", Ansi.LMAGENTA)
+            for cog_dir in os.listdir("./cogs"):
                 for file in os.listdir(f"./cogs/{cog_dir}"):
-                    if file.endswith('py'):
+                    if file.endswith("py"):
                         await self.load_extension(f"cogs.{cog_dir}.{file[:-3]}")
-            log('Initiated Cogs!', Ansi.LGREEN)
+            log("Initiated Cogs!", Ansi.LGREEN)
 
             try:
                 # start the bot in discordpy
-                await self.start(config.TOKEN,
-                                 *args, **kwargs)
+                async with self:
+                    self.check_donors.start()
+                    self.reroll_status.start()
+                    await self.start(config.TOKEN, *args, **kwargs)
             finally:
                 await glob.http.close()
 
@@ -269,8 +279,6 @@ class Sakuro(commands.Bot):
 
         try:
             self.loop.run_forever()
-            self.check_donors.start()
-            self.reroll_status.start()
         finally:
             self.check_donors.cancel()
             self.reroll_status.cancel()
