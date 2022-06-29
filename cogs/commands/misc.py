@@ -145,6 +145,6 @@ class MiscCog(commands.Cog, name='Misc'):
         await ctx.send(embed=embed)
 
 
-def setup(bot):
+async def setup(bot):
     log(f"Initiated {__name__} cog!", Ansi.CYAN)
-    bot.add_cog(MiscCog(bot))
+    await bot.add_cog(MiscCog(bot))
