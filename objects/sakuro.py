@@ -250,7 +250,7 @@ class Sakuro(commands.Bot):
             for cog_dir in os.listdir('./cogs'):
                 for file in os.listdir(f"./cogs/{cog_dir}"):
                     if file.endswith('py'):
-                        self.load_extension(f"cogs.{cog_dir}.{file[:-3]}")
+                        await self.load_extension(f"cogs.{cog_dir}.{file[:-3]}")
             log('Initiated Cogs!', Ansi.LGREEN)
 
             try:
