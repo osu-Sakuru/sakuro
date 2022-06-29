@@ -31,6 +31,6 @@ class WelcomeCog(commands.Cog):
 
             await channel.send(embed=embed)
 
-def setup(bot) -> None:
+async def setup(bot) -> None:
     log(f"Initiated {__name__} cog!", Ansi.CYAN)
-    bot.add_cog(WelcomeCog(bot))
+    await bot.add_cog(WelcomeCog(bot))

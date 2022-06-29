@@ -92,6 +92,6 @@ class SakuruCog(commands.Cog):
 
                         await thread.send(f'Request ID: {req_id}', embed=embed)
 
-def setup(bot) -> None:
+async def setup(bot) -> None:
     log(f"Initiated {__name__} cog!", Ansi.CYAN)
-    bot.add_cog(SakuruCog(bot))
+    await bot.add_cog(SakuruCog(bot))

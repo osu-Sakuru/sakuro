@@ -370,6 +370,6 @@ class OsuCog(commands.Cog, name='Osu'):
             else:
                 await ctx.send(sakuro_error(title="Error!", error=f"Match with `{match_id}` not found!", color=ctx.author.color))
 
-def setup(bot):
+async def setup(bot):
     log(f"Initiated {__name__} cog!", Ansi.CYAN)
-    bot.add_cog(OsuCog(bot))
+    await bot.add_cog(OsuCog(bot))

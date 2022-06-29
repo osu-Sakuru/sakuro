@@ -443,6 +443,6 @@ class AdminCog(commands.Cog, name='Admin'):
         await first_message.delete()
         await ctx.channel.delete()
 
-def setup(bot):
+async def setup(bot):
     log(f"Initiated {__name__} cog!", Ansi.CYAN)
-    bot.add_cog(AdminCog(bot))
+    await bot.add_cog(AdminCog(bot))
