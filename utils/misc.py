@@ -6,7 +6,6 @@ from random import choice
 from typing import Optional
 
 from discord import Embed
-from discord.components import C
 
 from objects import config
 
