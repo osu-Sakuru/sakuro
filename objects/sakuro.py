@@ -268,9 +268,9 @@ class Sakuro(commands.Bot):
         self.loop.create_task(runner())
 
         try:
+            self.loop.run_forever()
             self.check_donors.start()
             self.reroll_status.start()
-            self.loop.run_forever()
         finally:
             self.check_donors.cancel()
             self.reroll_status.cancel()
